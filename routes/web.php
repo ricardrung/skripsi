@@ -7,6 +7,77 @@ Route::get('/', function () {
     return view('pages.home.home');
 });
 
+Route::get('/kategori/facetreatment', function () {
+    return view('pages.kategori.facetreatment');
+});
+
+Route::get('/kategori/bodytreatment', function () {
+    return view('pages.kategori.bodytreatment');
+});
+
+Route::get('/kategori/hairtreatment', function () {
+    return view('pages.kategori.hairtreatment');
+});
+
+Route::get('/kategori/reflexology', function () {
+    return view('pages.kategori.reflexology');
+});
+
+Route::get('/kategori/treatmentpackages', function () {
+    return view('pages.kategori.treatmentpackages');
+});
+
+Route::get('/kategori/alacarte', function () {
+    return view('pages.kategori.alacarte');
+});
+
+Route::get('/kategori/prewedding', function () {
+    return view('pages.kategori.prewedding');
+});
+
+Route::get('/contact', function () {
+    return view('pages.contact.contact');
+});
+
+Route::get('/gallery', function () {
+    return view('pages.gallery.gallery');
+});
+
+Route::get('/riwayatbooking', function () {
+    return view('pages.riwayatbooking.riwayatbooking');
+});
+
+Route::get('/riwayatbooking', function () {
+    return view('pages.riwayatbooking.riwayatbooking');
+});
+
+Route::get('/promo', function () {
+    return view('pages.promo.promo');
+});
+
+Route::get('/sidebar', function () {
+    return view('components.sidebar.sidebar');
+});
+
+Route::get('/navbaradmin', function () {
+    return view('components.navbar.navbaradmin');
+});
+
+Route::get('/layoutadmin', function () {
+    return view('components.layout.layoutadmin');
+});
+
+Route::get('/dashboard', function () {
+    return view('pages.admin.dashboard');
+});
+
+Route::get('/manajemen-booking', function () {
+    return view('pages.admin.manajemenbooking');
+});
+
+Route::get('/input-booking-manual', function () {
+    return view('pages.admin.inputbookingmanual');
+});
 // Route::get('/navbar', function () {
 //     return view('components.navbar.navbar');
 // });

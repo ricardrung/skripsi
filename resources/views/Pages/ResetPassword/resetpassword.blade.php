@@ -1,15 +1,22 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Reset Password</title>
     @vite('resources/css/app.css')
 </head>
+
 <body class="flex flex-col items-center justify-center min-h-screen bg-gradient-to-b from-[#2c1f11] to-[#573d22]">
-    <div class="w-full max-w-md bg-white p-6 rounded-lg shadow-md">
-      <h2 class="text-3xl font-bold text-center drop-shadow-lg italic font-[Lucida_Calligraphy] text-[#000]"><b> Roemah Rempah Spa <br> Manado </b> </h2>
-      <hr class="border-t border-gray-300 my-3">
+    <div class="mb-[-20px]">
+        <img src="/images/RRS_Background.png" alt="Logo" class="w-50 h-50 mx-auto">
+    </div>
+    <div class="w-full max-w-sm bg-white p-6 rounded-3xl shadow-md mb-16">
+        <h2 class="text-3xl font-bold text-center drop-shadow-lg italic font-[Lucida_Calligraphy] text-[#000]"><b>
+                Roemah
+                Rempah Spa <br> Manado </b> </h2>
+        <hr class="border-t border-gray-300 my-3">
         <h2 class="text-2xl font-bold text-center text-[#000]">Reset Password</h2>
 
         <!-- Pesan Kesalahan -->
@@ -20,20 +27,23 @@
         <form action="#" class="mt-4" onsubmit="return validateForm(event)">
             <!-- Input Email -->
             <div>
-                <label class="block text-gray-700" >Email</label>
-                <input id="email" type="email" placeholder="Enter Email" class="w-full p-2 mt-1 border rounded-lg focus:ring focus:ring-[#8B5E3B]" required>
+                <label class="block text-gray-700">Email</label>
+                <input id="email" type="email" placeholder="Enter Email"
+                    class="w-full p-2 mt-1 border rounded-lg focus:ring focus:ring-[#8B5E3B]" required>
             </div>
 
             <!-- Input Password Baru -->
             <div class="mt-3">
                 <label class="block text-gray-700">New Password</label>
-                <input id="new-password" type="password" placeholder="Enter New Password" class="w-full p-2 mt-1 border rounded-lg focus:ring focus:ring-[#8B5E3B]" required>
+                <input id="new-password" type="password" placeholder="Enter New Password"
+                    class="w-full p-2 mt-1 border rounded-lg focus:ring focus:ring-[#8B5E3B]" required>
             </div>
 
             <!-- Input Konfirmasi Password -->
             <div class="mt-3">
                 <label class="block text-gray-700">Confirm New Password</label>
-                <input id="confirm-password" type="password" placeholder="Enter New Password" class="w-full p-2 mt-1 border rounded-lg focus:ring focus:ring-[#8B5E3B]" required>
+                <input id="confirm-password" type="password" placeholder="Enter New Password"
+                    class="w-full p-2 mt-1 border rounded-lg focus:ring focus:ring-[#8B5E3B]" required>
             </div>
 
             <!-- Tombol Reset Password -->
@@ -81,4 +91,5 @@
         }
     </script>
 </body>
+
 </html>
