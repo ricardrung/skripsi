@@ -15,7 +15,7 @@
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 ">
                 @php
                     // Misalkan kita mendapatkan jumlah transaksi dari session atau database
-                    $jumlahTransaksi = session('jumlah_transaksi', 0); // Ganti dengan logika yang sesuai
+                    $jumlahTransaksi = session('jumlah_transaksi', 5); // Ganti dengan logika yang sesuai
                     $paketSpa = [
                         [
                             'nama' => 'Ear Candle',

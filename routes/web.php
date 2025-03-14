@@ -78,6 +78,26 @@ Route::get('/manajemen-booking', function () {
 Route::get('/input-booking-manual', function () {
     return view('pages.admin.inputbookingmanual');
 });
+
+Route::get('/manajemen-therapist', function () {
+    return view('pages.admin.manajementherapist');
+});
+
+Route::get('/manajemen-paket-treatment', function () {
+    return view('pages.admin.manajementreatment');
+});
+
+Route::get('/manajemen-promo', function () {
+    return view('pages.admin.manajemenpromo');
+});
+
+Route::get('/manajemen-pelanggan', function () {
+    return view('pages.admin.manajemenpelanggan');
+});
+
+Route::get('/manajemen-pembayaran', function () {
+    return view('pages.admin.manajemenpembayaran');
+});
 // Route::get('/navbar', function () {
 //     return view('components.navbar.navbar');
 // });
