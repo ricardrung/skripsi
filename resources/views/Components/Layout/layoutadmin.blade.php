@@ -24,7 +24,7 @@
         <!-- Menu -->
         <ul class="border-t border-gray-300 mt-4">
             <li>
-                <a href="/dashboard" class="p-6 hover:bg-[#3a2416] flex items-center space-x-3 block">
+                <a href="/dashboard-admin" class="p-6 hover:bg-[#3a2416] flex items-center space-x-3 block">
                     <i class="fas fa-home"></i> <span class="sidebar-text">Dashboard</span>
                 </a>
             </li>

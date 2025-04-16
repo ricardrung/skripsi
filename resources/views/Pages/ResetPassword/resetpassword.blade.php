@@ -9,10 +9,10 @@
 </head>
 
 <body class="flex flex-col items-center justify-center min-h-screen bg-gradient-to-b from-[#2c1f11] to-[#573d22]">
-    <div class="mb-[-20px]">
+    {{-- <div class="mb-[-20px]">
         <img src="/images/RRS_Background.png" alt="Logo" class="w-50 h-50 mx-auto">
-    </div>
-    <div class="w-full max-w-sm bg-white p-6 rounded-3xl shadow-md mb-16">
+    </div> --}}
+    <div class="w-full max-w-sm bg-white p-5 rounded-3xl shadow-2xl mt-16 mb-16">
         <h2 class="text-3xl font-bold text-center drop-shadow-lg italic font-[Lucida_Calligraphy] text-[#000]"><b>
                 Roemah
                 Rempah Spa <br> Manado </b> </h2>
@@ -47,7 +47,7 @@
             </div>
 
             <!-- Tombol Reset Password -->
-            <button class="w-full mt-4 bg-[#7a5b2a] text-white p-2 rounded-lg hover:bg-[#6D422A] transition">
+            <button class="w-full mt-4 bg-[#2c1f11] text-white p-2 rounded-lg hover:bg-[#b8925c] transition">
                 Reset Password
             </button>
         </form>
