@@ -18,7 +18,6 @@
     @guest
         @include('Components.Navbar.nav-guest')
     @endguest
-
     <main>
         @yield('content')
     </main>
@@ -41,7 +40,8 @@
                 <div>
                     <h3 class="text-lg font-semibold">Layanan</h3>
                     <ul class="mt-2 space-y-2">
-                        <li><a href="/kategori/facetreatment" class="text-gray-300 hover:text-white">Face Treatment</a>
+                        <li><a href="/kategori/facetreatment" class="text-gray-300 hover:text-white">Face
+                                Treatment</a>
                         </li>
                         <li><a href="/kategori/bodytreatment" class="text-gray-300 hover:text-white">Body
                                 Treatment</a></li>

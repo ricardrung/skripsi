@@ -15,7 +15,7 @@ return new class extends Migration
             $table->string('phone')->nullable();
             $table->date('birthdate')->nullable();
             $table->enum('gender', ['male', 'female'])->nullable();
-            $table->enum('role', ['admin', 'customer'])->default('customer');
+            $table->enum('role', ['admin', 'therapist', 'customer']);
             $table->string('photo')->nullable();
         });
     }

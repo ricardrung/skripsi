@@ -134,11 +134,19 @@
                             <p class="text-gray-700 my-2">{{ $paket['deskripsi'] }}</p>
                             <span
                                 class="block text-lg font-bold text-[#8b5a2b]">{{ number_format($paket['harga'], 0, ',', '.') }}</span>
-                            <button
-                                onclick="openModal('{{ $paket['nama'] }}', '{{ $paket['deskripsi'] }}', {{ $paket['harga'] }}, {{ $paket['durasi'] }})"
-                                class="mt-4 inline-block bg-[#8b5a2b] text-white px-4 py-2 rounded-lg hover:bg-[#6b4223] transition">
-                                Booking
-                            </button>
+                            @auth
+                                <button
+                                    onclick="openModal('{{ $paket['nama'] }}', '{{ $paket['deskripsi'] }}', {{ $paket['harga'] }}, {{ $paket['durasi'] }})"
+                                    class="mt-4 inline-block bg-[#8b5a2b] text-white px-4 py-2 rounded-lg hover:bg-[#6b4223] transition">
+                                    Booking
+                                </button>
+                            @else
+                                <!-- Kalau user belum login -->
+                                <a href="{{ route('register') }}"
+                                    class="mt-4 inline-block bg-[#8b5a2b] text-white px-4 py-2 rounded-lg hover:bg-[#6b4223] transition">
+                                    Booking
+                                </a>
+                            @endauth
                         </div>
                     </div>
                 @endforeach

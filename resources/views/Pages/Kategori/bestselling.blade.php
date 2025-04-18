@@ -1,14 +1,9 @@
-@extends('Components.Layout.layout')
-@section('content')
-    <header class="bg-white shadow-sm pt-24">
-        <div class="container mx-auto px-4 py-6 ">
-            <h1 class="text-3xl font-bold tracking-tight text-[#2c1a0f]">Treatment Packages</h1>
-        </div>
-    </header>
-    <section class="py-16">
+    <!-- Daftar Layanan -->
+    <section id="layanan" class="py-16 bg-gray-100 scroll-mt-16">
         <div class="container mx-auto px-4 text-center">
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-
+            <h2 class="text-3xl font-bold mb-8 text-[#2c1a0f]">Best Selling</h2>
+            {{-- <div class="flex justify-center"> --}}
+            <div class="grid grid-cols-1 md:grid-cols-2  gap-8">
                 @php
                     $paketSpa = [
                         [
@@ -26,37 +21,12 @@
                             'harga_happy_hour' => 275000,
                             'gambar' => '/images/massage.jpg',
                         ],
-                        [
-                            'nama' => 'Kesengsem',
-                            'deskripsi' => 'Teh Hijau Spa Treatment Massage + Lulur Teh + Masker Badan + Mandi Teh',
-                            'harga_normal' => 240000,
-                            'harga_happy_hour' => 220000,
-                            'gambar' => '/images/massage.jpg',
-                        ],
-                        [
-                            'nama' => 'Putih Ayu',
-                            'deskripsi' =>
-                                'Whitening Spa Treatment Massage + Lulur + Masker Badan + Masker Wajah + Mandi Susu',
-                            'harga_normal' => 275000,
-                            'harga_happy_hour' => 240000,
-                            'gambar' => '/images/massage.jpg',
-                        ],
-                        [
-                            'nama' => 'Manis Rupane',
-                            'deskripsi' =>
-                                'Chocolate Spa Treatment Massage + Lulur Cokelat + Masker Badan Cokelat + Mandi Cokelat',
-                            'harga_normal' => 275000,
-                            'harga_happy_hour' => 240000,
-                            'gambar' => '/images/massage.jpg',
-                        ],
                     ];
-                    $therapists = ['Therapist A', 'Therapist B', 'Therapist C', 'Therapist D', 'Therapist E'];
                 @endphp
-
-                <!-- Card Paket Spa Signature Package -->
+                <!-- Card 1 -->
                 @foreach ($paketSpa as $paket)
                     <div class="bg-white shadow-lg rounded-lg overflow-hidden">
-                        <img src="{{ $paket['gambar'] }}" alt="{{ $paket['nama'] }}" class="w-full h-48 object-cover">
+                        <img src="{{ $paket['gambar'] }}" alt="{{ $paket['nama'] }}" class="w-full h-64 object-cover">
                         <div class="p-6">
                             <h3 class="text-2xl font-semibold text-[#2c1a0f]">{{ $paket['nama'] }}</h3>
                             <p class="text-gray-700 my-2">{{ $paket['deskripsi'] }}</p>
@@ -75,6 +45,7 @@
                             </div>
                             <!-- Tombol Booking -->
                             @auth
+                                <!-- Kalau user sudah login -->
                                 <button
                                     onclick="openModal('{{ $paket['nama'] }}', '{{ $paket['deskripsi'] }}', {{ $paket['harga_normal'] }}, {{ $paket['harga_happy_hour'] }})"
                                     class="mt-4 inline-block bg-[#8b5a2b] text-white px-4 py-2 rounded-lg hover:bg-[#6b4223] transition">
@@ -90,7 +61,6 @@
                         </div>
                     </div>
                 @endforeach
-
                 <!-- Form Booking Modal -->
                 <div id="bookingModal"
                     class="fixed inset-0 flex items-center justify-center  bg-opacity-50 hidden z-50 overflow-y-auto">
@@ -117,7 +87,8 @@
                             <!-- Paket Spa -->
                             <div>
                                 <label class="block font-semibold">Paket Spa yang Dipilih:</label>
-                                <input type="text" class="w-full p-2 border rounded bg-gray-100 text-gray-700" readonly>
+                                <input type="text" class="w-full p-2 border rounded bg-gray-100 text-gray-700"
+                                    readonly>
                                 <input type="hidden" id="paket" name="paket">
                             </div>
                             <!-- Tanggal -->
@@ -153,16 +124,6 @@
                                     <option value="19:30-22:00">19:30 - 22:00</option>
                                 </select>
                             </div>
-                            <!-- Pemilihan Therapist -->
-                            <div>
-                                <label for="therapist" class="block font-semibold">Pilih Therapist (Opsional):</label>
-                                <select id="therapist" name="therapist" class="w-full p-2 border rounded">
-                                    <option value="auto">Pilihkan untuk saya</option>
-                                    @foreach ($therapists as $therapist)
-                                        <option value="{{ $therapist }}">{{ $therapist }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
                             <!-- Harga -->
                             <div>
                                 <p class="text-lg font-semibold">Total Harga: <span id="harga"
@@ -176,8 +137,6 @@
                         </form>
                     </div>
                 </div>
-
-
                 <!-- JavaScript untuk Modal dan Happy Hour -->
                 <script>
                     document.addEventListener("DOMContentLoaded", function() {
@@ -300,4 +259,3 @@
             </div>
         </div>
     </section>
-@endsection
