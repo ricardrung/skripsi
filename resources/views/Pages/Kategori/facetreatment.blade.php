@@ -16,6 +16,7 @@
                                 'deskripsi' => 'Totok Wajah + Serum + Masker Wajah',
                                 'harga' => 105000,
                                 'gambar' => '/images/massage.jpg',
+                                'video' => 'https://www.youtube.com/embed/j_r4ROcphKQ',
                             ],
                         ];
                         $therapists = ['Therapist A', 'Therapist B', 'Therapist C', 'Therapist D', 'Therapist E'];
@@ -23,12 +24,20 @@
                     <!-- Card Paket Spa -->
                     @foreach ($paketSpa as $paket)
                         <div class="bg-white shadow-lg rounded-lg overflow-hidden">
-                            <img src="{{ $paket['gambar'] }}" alt="{{ $paket['nama'] }}" class="w-full h-48 object-cover">
+                            @if (!empty($paket['video']))
+                                <div class="my-4">
+                                    <iframe width="100%" height="200" src="{{ $paket['video'] }}" frameborder="0"
+                                        allowfullscreen class="rounded-lg shadow">
+                                    </iframe>
+                                </div>
+                            @endif
                             <div class="p-6">
                                 <h3 class="text-2xl font-semibold text-[#2c1a0f]">{{ $paket['nama'] }}</h3>
                                 <p class="text-gray-700 my-2">{{ $paket['deskripsi'] }}</p>
-                                <span
-                                    class="block text-lg font-bold text-[#8b5a2b]">{{ number_format($paket['harga'], 0, ',', '.') }}</span>
+                                <span class="block text-lg font-bold text-[#8b5a2b]">
+                                    {{ number_format($paket['harga'], 0, ',', '.') }}
+                                </span>
+
                                 @auth
                                     <button
                                         onclick="openModal('{{ $paket['nama'] }}', '{{ $paket['deskripsi'] }}', {{ $paket['harga'] }})"
@@ -36,7 +45,6 @@
                                         Booking
                                     </button>
                                 @else
-                                    <!-- Kalau user belum login -->
                                     <a href="{{ route('register') }}"
                                         class="mt-4 inline-block bg-[#8b5a2b] text-white px-4 py-2 rounded-lg hover:bg-[#6b4223] transition">
                                         Booking
@@ -45,6 +53,7 @@
                             </div>
                         </div>
                     @endforeach
+
 
                     <!-- Form Booking Modal -->
                     <div id="bookingModal"
@@ -125,6 +134,17 @@
                                         @foreach ($therapists as $therapist)
                                             <option value="{{ $therapist }}">{{ $therapist }}</option>
                                         @endforeach
+                                    </select>
+                                </div>
+
+                                <!-- Metode Pembayaran -->
+                                <div>
+                                    <label for="metode_pembayaran" class="block font-semibold">Metode Pembayaran:</label>
+                                    <select id="metode_pembayaran" name="metode_pembayaran"
+                                        class="w-full p-2 border rounded" required>
+                                        <option value="">-- Pilih Metode Pembayaran --</option>
+                                        <option value="cash">Bayar di Tempat (Cash)</option>
+                                        <option value="gateway">Bayar Sekarang (Payment Gateway)</option>
                                     </select>
                                 </div>
 

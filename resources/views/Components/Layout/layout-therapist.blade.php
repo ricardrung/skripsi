@@ -25,52 +25,52 @@
         <!-- Menu -->
         <ul class="border-t border-gray-300 mt-4">
             <li>
-                <a href="/dashboard-admin" class="p-6 hover:bg-[#3a2416] flex items-center space-x-3 block">
+                <a href="/dashboard-therapist" class="p-6 hover:bg-[#3a2416] flex items-center space-x-3 block">
                     <i class="fas fa-home"></i> <span class="sidebar-text">Dashboard</span>
                 </a>
             </li>
-            <li>
+            {{-- <li>
                 <a href="/manajemen-booking" class="p-6 hover:bg-[#3a2416] flex items-center space-x-3 block">
                     <i class="fas fa-calendar"></i> <span class="sidebar-text">Manajemen Booking</span>
                 </a>
-            </li>
-            <li>
+            </li> --}}
+            {{-- <li>
                 <a href="/input-booking-manual" class="p-6 hover:bg-[#3a2416] flex items-center space-x-3 block">
                     <i class="fas fa-edit"></i> <span class="sidebar-text">Input Booking Manual</span>
                 </a>
-            </li>
-            <li>
+            </li> --}}
+            {{-- <li>
                 <a href="/manajemen-therapist" class="p-6 hover:bg-[#3a2416] flex items-center space-x-3 block">
                     <i class="fas fa-user"></i> <span class="sidebar-text">Manajemen Therapist</span>
                 </a>
-            </li>
-            <li>
+            </li> --}}
+            {{-- <li>
                 <a href="/manajemen-paket-treatment" class="p-6 hover:bg-[#3a2416] flex items-center space-x-3 block">
                     <i class="fas fa-box"></i> <span class="sidebar-text">Manajemen Paket Treatment</span>
                 </a>
-            </li>
+            </li> --}}
             {{-- <li>
                 <a href="/manajemen-bahan-treatment" class="p-6 hover:bg-[#3a2416] flex items-center space-x-3 block">
                     <i class="fas fa-flask"></i> <span class="sidebar-text">Manajemen Ketersediaan Bahan
                         Treatment</span>
                 </a>
             </li> --}}
-            <li>
+            {{-- <li>
                 <a href="/manajemen-promo" class="p-6 hover:bg-[#3a2416] flex items-center space-x-3 block">
                     <i class="fa-solid fa-receipt"></i><span class="sidebar-text">Manajemen promo</span>
                 </a>
-            </li>
-            <li>
+            </li> --}}
+            {{-- <li>
                 <a href="/manajemen-pembayaran" class="p-6 hover:bg-[#3a2416] flex items-center space-x-3 block">
                     <i class="fas fa-credit-card"></i> <span class="sidebar-text">Manajemen Pembayaran & Status
                         Booking</span>
                 </a>
-            </li>
-            <li>
+            </li> --}}
+            {{-- <li>
                 <a href="/manajemen-pelanggan" class="p-6 hover:bg-[#3a2416] flex items-center space-x-3 block">
                     <i class="fas fa-users"></i> <span class="sidebar-text">Manajemen Pelanggan</span>
                 </a>
-            </li>
+            </li> --}}
             {{-- <li>
                 <a href="/laporan-analitik" class="p-6 hover:bg-[#3a2416] flex items-center space-x-3 block">
                     <i class="fas fa-chart-line"></i> <span class="sidebar-text">Laporan & Analitik</span>

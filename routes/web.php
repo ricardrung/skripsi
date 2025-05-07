@@ -1,32 +1,16 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
+use Illuminate\Support\Facades\Auth; 
 use Illuminate\Support\Facades\Route;
+use App\Http\Middleware\BlockAdminFromPublic;
+use App\Models\TreatmentCategory;
+use App\Http\Controllers\TreatmentManajemenController;
 
-Route::get('/', function () {
-    return view('welcome');
-});
-
-Route::get('/dashboard', function () {
-    return view('pages.home.home');
-})->middleware(['auth', 'verified'])->name('dashboard');
-
-Route::get('/dashboard1', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard1');
-
-Route::middleware('auth')->group(function () {
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-});
-
-require __DIR__.'/auth.php';
-
+// Rute default (bisa untuk semua)
 Route::get('/', function () {
     return view('pages.home.home');
 });
-
 Route::get('/kategori/facetreatment', function () {
     return view('pages.kategori.facetreatment');
 });
@@ -63,61 +47,159 @@ Route::get('/gallery', function () {
     return view('pages.gallery.gallery');
 });
 
-Route::get('/riwayatbooking', function () {
-    return view('pages.riwayatbooking.riwayatbooking');
+
+// Rute Customer
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/dashboard', function () {
+        if (Auth::user()->role !== 'customer') {
+            abort(403);
+        }
+        return view('pages.home.home');
+    })->name('dashboard');
+
+    Route::get('/riwayatbooking', function () {
+        if (Auth::user()->role !== 'customer') {
+            abort(403);
+        }
+        return view('pages.riwayatbooking.riwayatbooking');
+    });
+
+    Route::get('/promo', function () {
+        if (Auth::user()->role !== 'customer') {
+            abort(403);
+        }
+        return view('pages.promo.promo');
+    });
 });
 
-Route::get('/riwayatbooking', function () {
-    return view('pages.riwayatbooking.riwayatbooking');
+//r Rute Therapist
+
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/dashboard-therapist', function () {
+        if (Auth::user()->role !== 'therapist') {
+            abort(403);
+        }
+        return view('pages.therapist.dashboard');
+    });
 });
 
-Route::get('/promo', function () {
-    return view('pages.promo.promo');
+// Rute Admin
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/dashboard-admin', function () {
+        if (Auth::user()->role !== 'admin') {
+            abort(403);
+        }
+        return view('pages.admin.dashboard');
+    });
+
+    Route::get('/manajemen-booking', function () {
+        if (Auth::user()->role !== 'admin') {
+            abort(403);
+        }
+        return view('pages.admin.manajemenbooking');
+    });
+
+    Route::get('/input-booking-manual', function () {
+        if (Auth::user()->role !== 'admin') {
+            abort(403);
+        }
+        return view('pages.admin.inputbookingmanual');
+    });
+
+    Route::get('/manajemen-therapist', function () {
+        if (Auth::user()->role !== 'admin') {
+            abort(403);
+        }
+        return view('pages.admin.manajementherapist');
+    });
+    
+    Route::get('/manajemen-paket-treatment', function () {
+        if (Auth::user()->role !== 'admin') {
+            abort(403);
+        }
+        $categories = TreatmentCategory::all(); // ambil semua kategori dari DB
+        return view('pages.admin.manajementreatment', compact('categories'));
+    });
+    Route::post('/manajemen-paket-treatment/store', [TreatmentManajemenController::class, 'store'])->name('treatments.store');
+    
+    Route::get('/manajemen-promo', function () {
+        if (Auth::user()->role !== 'admin') {
+            abort(403);
+        }
+        return view('pages.admin.manajemenpromo');
+    });
+    
+    Route::get('/manajemen-pelanggan', function () {
+        if (Auth::user()->role !== 'admin') {
+            abort(403);
+        }
+        return view('pages.admin.manajemenpelanggan');
+    });
+    
+    Route::get('/manajemen-pembayaran', function () {
+        if (Auth::user()->role !== 'admin') {
+            abort(403);
+        }
+        return view('pages.admin.manajemenpembayaran');
+    });
 });
 
-Route::get('/sidebar', function () {
-    return view('components.sidebar.sidebar');
+
+Route::middleware(BlockAdminFromPublic::class)->group(function () {
+    Route::get('/', fn () => view('pages.home.home'));
+    Route::get('/kategori/facetreatment', fn () => view('pages.kategori.facetreatment'));
+    Route::get('/kategori/bodytreatment', fn () => view('pages.kategori.bodytreatment'));
+    Route::get('/kategori/hairtreatment', fn () => view('pages.kategori.hairtreatment'));
+    Route::get('/kategori/reflexology', fn () => view('pages.kategori.reflexology'));
+    Route::get('/kategori/treatmentpackages', fn () => view('pages.kategori.treatmentpackages'));
+    Route::get('/kategori/alacarte', fn () => view('pages.kategori.alacarte'));
+    Route::get('/kategori/prewedding', fn () => view('pages.kategori.prewedding'));
+    Route::get('/contact', fn () => view('pages.contact.contact'));
+    Route::get('/gallery', fn () => view('pages.gallery.gallery'));
 });
 
-Route::get('/navbaradmin', function () {
-    return view('components.navbar.navbaradmin');
+// Route::get('/dashboard1', function () {
+//     return view('dashboard');
+// })->middleware(['auth', 'verified'])->name('dashboard1');
+
+Route::middleware('auth')->group(function () {
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-Route::get('/layoutadmin', function () {
-    return view('components.layout.layoutadmin');
-});
+require __DIR__.'/auth.php';
 
-Route::get('/dashboard-admin', function () {
-    return view('pages.admin.dashboard');
-});
+// Route::get('/riwayatbooking', function () {
+//     return view('pages.riwayatbooking.riwayatbooking');
+// });
 
-Route::get('/manajemen-booking', function () {
-    return view('pages.admin.manajemenbooking');
-});
 
-Route::get('/input-booking-manual', function () {
-    return view('pages.admin.inputbookingmanual');
-});
+// Route::get('/sidebar', function () {
+//     return view('components.sidebar.sidebar');
+// });
 
-Route::get('/manajemen-therapist', function () {
-    return view('pages.admin.manajementherapist');
-});
+// Route::get('/navbaradmin', function () {
+//     return view('components.navbar.navbaradmin');
+// });
 
-Route::get('/manajemen-paket-treatment', function () {
-    return view('pages.admin.manajementreatment');
-});
+// Route::get('/layoutadmin', function () {
+//     return view('components.layout.layoutadmin');
+// });
 
-Route::get('/manajemen-promo', function () {
-    return view('pages.admin.manajemenpromo');
-});
+// Route::get('/dashboard-admin', function () {
+//     return view('pages.admin.dashboard');
+// });
 
-Route::get('/manajemen-pelanggan', function () {
-    return view('pages.admin.manajemenpelanggan');
-});
+// Route::get('/manajemen-booking', function () {
+//     return view('pages.admin.manajemenbooking');
+// });
 
-Route::get('/manajemen-pembayaran', function () {
-    return view('pages.admin.manajemenpembayaran');
-});
+// Route::get('/input-booking-manual', function () {
+//     return view('pages.admin.inputbookingmanual');
+// });
+
+
 // Route::get('/navbar', function () {
 //     return view('components.navbar.navbar');
 // });

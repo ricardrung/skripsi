@@ -234,12 +234,15 @@
                         ];
 
                         const currentHour = today.getHours();
+                        const currentMinutes = today.getMinutes();
 
                         jamOptions.forEach(jam => {
                             const jamMulai = parseInt(jam.split(":")[0]);
+                            const [jamHour, jamMinute] = jamMulai.split(":").map(Number); // Pisahkan jam dan menit
 
                             // Jika hari ini, hanya tampilkan jam yang belum lewat
-                            if (isToday && jamMulai <= currentHour) {
+                            // Jika hari ini, sembunyikan waktu yang sudah lewat
+                            if (isToday && (jamHour < currentHour || (jamHour === currentHour && jamMinute < currentMinutes))) {
                                 return;
                             }
 
