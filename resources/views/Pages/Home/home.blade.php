@@ -136,7 +136,7 @@
     </section>
 
     <!-- Peta Lokasi -->
-    <section id="layanan" class="py-16 bg-gray-100 scroll-mt-16">
+    <section id="peta" class="py-16 bg-gray-100 scroll-mt-16">
         <div>
             <h3 class="text-3xl font-bold mb-8 text-center text-[#2c1a0f]">Our Location</h3>
             <div class="w-full h-64 md:h-80">

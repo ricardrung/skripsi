@@ -13,59 +13,44 @@
     <section class="py-16 ">
         <div class="container mx-auto px-4 text-center">
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 ">
-                @php
-                    // Misalkan kita mendapatkan jumlah transaksi dari session atau database
-                    $jumlahTransaksi = session('jumlah_transaksi', 5); // Ganti dengan logika yang sesuai
-                    $paketSpa = [
-                        [
-                            'nama' => 'Ear Candle',
-                            'deskripsi' => 'Ear Candle 15 Menit',
-                            'harga' => 75000,
-                            'durasi' => 15,
-                            'gambar' => '/images/massage.jpg',
-                        ],
-                        [
-                            'nama' => 'Totok Wajah',
-                            'deskripsi' => 'Totok Wajah 30 Menit',
-                            'harga' => 55000,
-                            'durasi' => 30,
-                            'gambar' => '/images/massage.jpg',
-                        ],
-                        [
-                            'nama' => 'Reflexology',
-                            'deskripsi' => 'Reflexology 60 Menit',
-                            'harga' => 130000,
-                            'durasi' => 60,
-                            'gambar' => '/images/massage.jpg',
-                        ],
-                        [
-                            'nama' => 'Full Body Massage',
-                            'deskripsi' => 'Full Body Massage 60 Menit',
-                            'harga' => 130000,
-                            'durasi' => 60,
-                            'gambar' => '/images/massage.jpg',
-                        ],
-                        [
-                            'nama' => 'Full Body Massage + face mask',
-                            'deskripsi' => 'Full Body Massage 60 Menit + face mask',
-                            'harga' => 130000,
-                            'durasi' => 60,
-                            'gambar' => '/images/massage.jpg',
-                        ],
-                    ];
-                @endphp
 
                 @if ($jumlahTransaksi >= 5 && $jumlahTransaksi % 5 == 0)
                     <!-- Card Paket Spa -->
-                    @foreach ($paketSpa as $paket)
+                    @foreach ($treatments as $treatment)
                         <div class="bg-white shadow-lg rounded-lg overflow-hidden">
-                            <img src="{{ $paket['gambar'] }}" alt="{{ $paket['nama'] }}" class="w-full h-48 object-cover">
+                            @if (!empty($treatment->demo_video_url))
+                                @php
+                                    $url = $treatment->demo_video_url;
+
+                                    if (Str::contains($url, 'youtu.be')) {
+                                        // Untuk link short youtu.be
+                                        preg_match('/youtu\.be\/([^\?]+)/', $url, $matches);
+                                        $videoId = $matches[1] ?? '';
+                                    } elseif (Str::contains($url, 'watch?v=')) {
+                                        // Untuk link youtube.com/watch?v=
+                                        parse_str(parse_url($url, PHP_URL_QUERY), $query);
+                                        $videoId = $query['v'] ?? '';
+                                    } else {
+                                        $videoId = '';
+                                    }
+
+                                    $embedUrl = $videoId ? 'https://www.youtube.com/embed/' . $videoId : '';
+                                @endphp
+
+                                @if ($embedUrl)
+                                    <div class="my-4">
+                                        <iframe width="100%" height="200" src="{{ $embedUrl }}" frameborder="0"
+                                            allowfullscreen class="rounded-lg shadow">
+                                        </iframe>
+                                    </div>
+                                @endif
+                            @endif
                             <div class="p-6">
-                                <h3 class="text-2xl font-semibold text-[#2c1a0f]">{{ $paket['nama'] }}</h3>
-                                <p class="text-gray-700 my-2">{{ $paket['deskripsi'] }}</p>
+                                <h3 class="text-2xl font-semibold text-[#2c1a0f]">{{ $treatment->name }}</h3>
+                                <p class="text-gray-700 my-2">{{ $treatment->description }}</p>
                                 <span class="block text-lg font-bold text-[#8b5a2b]">Gratis</span>
                                 <button
-                                    onclick="openModal('{{ $paket['nama'] }}', '{{ $paket['deskripsi'] }}', 0, {{ $paket['durasi'] }})"
+                                    onclick="openModal('{{ $treatment->name }}', '{{ $treatment->description }}', 0, {{ $treatment->duration_minutes }})"
                                     class="mt-4 inline-block bg-[#8b5a2b] text-white px-4 py-2 rounded-lg hover:bg-[#6b4223] transition">
                                     Pilih Treatment Gratis
                                 </button>
@@ -124,6 +109,28 @@
                                 <label for="jam" class="block font-semibold">Pilih Jam:</label>
                                 <select id="jam" name="jam" class="w-full p-2 border rounded">
                                     <!-- Opsi jam akan diisi oleh JavaScript -->
+                                </select>
+                            </div>
+
+                            <!-- Pemilihan Therapist -->
+                            <div>
+                                <label for="therapist" class="block font-semibold">Pilih Therapist (Opsional):</label>
+                                <select id="therapist" name="therapist" class="w-full p-2 border rounded">
+                                    <option value="auto">Pilihkan untuk saya</option>
+                                    @foreach ($therapists as $therapist)
+                                        <option value="{{ $therapist->id }}">{{ $therapist->name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <!-- Metode Pembayaran -->
+                            <div>
+                                <label for="metode_pembayaran" class="block font-semibold">Metode Pembayaran:</label>
+                                <select id="metode_pembayaran" name="metode_pembayaran" class="w-full p-2 border rounded"
+                                    required>
+                                    <option value="">-- Pilih Metode Pembayaran --</option>
+                                    <option value="cash">Bayar di Tempat (Cash)</option>
+                                    <option value="gateway">Bayar Sekarang (Payment Gateway)</option>
                                 </select>
                             </div>
 

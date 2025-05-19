@@ -8,6 +8,7 @@
     @vite('resources/css/app.css')
     @vite('resources/js/app.js')
     <link rel="stylesheet" href="/fontawesome-/css/all.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 
 <body class="bg-gray-100">
@@ -55,11 +56,11 @@
                         Treatment</span>
                 </a>
             </li> --}}
-            <li>
+            {{-- <li>
                 <a href="/manajemen-promo" class="p-6 hover:bg-[#3a2416] flex items-center space-x-3 block">
                     <i class="fa-solid fa-receipt"></i><span class="sidebar-text">Manajemen promo</span>
                 </a>
-            </li>
+            </li> --}}
             <li>
                 <a href="/manajemen-pembayaran" class="p-6 hover:bg-[#3a2416] flex items-center space-x-3 block">
                     <i class="fas fa-credit-card"></i> <span class="sidebar-text">Manajemen Pembayaran & Status
@@ -134,7 +135,7 @@
                         @csrf
                         <x-dropdown-link :href="route('logout')"
                             onclick="event.preventDefault();
-                                      this.closest('form').submit();">
+                                    this.closest('form').submit();">
                             {{ __('Log Out') }}
                         </x-dropdown-link>
                     </form>
@@ -162,7 +163,7 @@
                         @csrf
                         <x-dropdown-link :href="route('logout')"
                             onclick="event.preventDefault();
-                              this.closest('form').submit();">
+                            this.closest('form').submit();">
                             {{ __('Log Out') }}
                         </x-dropdown-link>
                     </form>
@@ -240,6 +241,24 @@
         });
     </script>
 
+    <script>
+        function confirmDeleteTreatment(id) {
+            Swal.fire({
+                title: 'Hapus Treatment?',
+                text: "Data ini tidak bisa dikembalikan!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#aaa',
+                confirmButtonText: 'Ya, hapus!',
+                cancelButtonText: 'Batal'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.getElementById('delete-treatment-' + id).submit();
+                }
+            });
+        }
+    </script>
 
 
 </body>

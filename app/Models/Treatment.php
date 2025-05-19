@@ -17,6 +17,7 @@ class Treatment extends Model
         'duration_minutes',
         'demo_video_url',
         'is_promo',
+        'is_best_selling',
         'promo_required_bookings',
     ];
 

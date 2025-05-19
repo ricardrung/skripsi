@@ -9,6 +9,8 @@
     <link rel="stylesheet" href="/fontawesome-/css/all.css">
     @vite('resources/css/app.css')
     @vite('resources/js/app.js')
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 </head>
 
 <body class="flex flex-col min-h-screen ">
@@ -47,17 +49,18 @@
                                 Treatment</a></li>
                         <li><a href="/kategori/hairtreatment" class="text-gray-300 hover:text-white">Hair
                                 Treatment</a></li>
-                        <li><a href="/kategori/reflexology" class="text-gray-300 hover:text-white">Reflexology</a>
+
                         </li>
                     </ul>
                 </div>
                 <div>
                     <h3 class="text-lg font-semibold">Layanan</h3>
                     <ul class="mt-2 space-y-2">
+                        <li><a href="/kategori/reflexology" class="text-gray-300 hover:text-white">Reflexology</a>
                         <li><a href="/kategori/treatmentpackages" class="text-gray-300 hover:text-white">Treatment
                                 Packages</a></li>
                         <li><a href="/kategori/alacarte" class="text-gray-300 hover:text-white">Ala Carte</a></li>
-                        <li><a href="/kategori/prewedding" class="text-gray-300 hover:text-white">Prewedding</a></li>
+
                     </ul>
                 </div>
             </div>
@@ -78,6 +81,34 @@
 
         </div>
     </footer>
+
+    @if (session('success'))
+        <script>
+            document.addEventListener("DOMContentLoaded", function() {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Sukses!',
+                    text: '{{ session('success') }}',
+                    confirmButtonColor: '#3085d6',
+                    confirmButtonText: 'OK'
+                });
+            });
+        </script>
+    @endif
+
+    @if (session('error'))
+        <script>
+            document.addEventListener("DOMContentLoaded", function() {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops!',
+                    text: '{{ session('error') }}',
+                    confirmButtonColor: '#d33',
+                    confirmButtonText: 'Tutup'
+                });
+            });
+        </script>
+    @endif
 
 </body>
 

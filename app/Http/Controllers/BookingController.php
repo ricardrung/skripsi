@@ -1,0 +1,325 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+use App\Models\Booking;
+use App\Models\Treatment;
+use App\Models\User;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+
+class BookingController extends Controller
+{
+    //
+    public function index()
+    {
+        // Tampilkan booking untuk admin/customer
+        $bookings = Booking::with(['treatment', 'therapist', 'user', 'creator'])
+            ->orderByDesc('booking_date')
+            ->get();
+
+        return view('pages.admin.manajemenbooking', compact('bookings'));
+    }
+
+    public function create()
+    {
+        $customers = User::where('role', 'customer')->get();
+        $treatments = Treatment::all();
+        $therapists = User::where('role', 'therapist')->get();
+
+        return view('pages.admin.inputbookingmanual', compact('customers', 'treatments', 'therapists'));
+    }
+
+
+    // Digunakan saat customer melakukan booking dari halaman depan (misalnya modal popup)
+public function storeCustomer(Request $request)
+{
+    $request->validate([
+        'treatment_id' => 'required|exists:treatments,id',
+        'booking_date' => 'required|date',
+        'booking_time' => 'required',
+        'therapist_id' => 'nullable|exists:users,id',
+        'payment_method' => 'required|in:cash,gateway',
+    ]);
+
+    //waktu
+$bookingDateTime = Carbon::parse($request->booking_date . ' ' . $request->booking_time);
+if ($bookingDateTime->isPast()) {
+    return back()->with('error', 'Tidak bisa booking di waktu yang sudah lewat.');
+}
+if ($bookingDateTime->gt(now()->addDays(7))) {
+    return back()->with('error', 'Booking hanya bisa dilakukan maksimal 7 hari ke depan.');
+}
+
+    $treatment = Treatment::findOrFail($request->treatment_id);
+    $startTime = Carbon::parse($request->booking_time);
+    $endTime = $startTime->copy()->addMinutes($treatment->duration_minutes);
+
+    if (empty($request->therapist_id)) {
+        $availableTherapists = User::where('role', 'therapist')->get()->filter(function ($therapist) use ($request, $startTime, $endTime) {
+            return !Booking::where('therapist_id', $therapist->id)
+                ->where('booking_date', $request->booking_date)
+                ->where('status', '!=', 'batal')
+                ->where(function ($query) use ($startTime, $endTime) {
+                    $query->whereBetween('booking_time', [$startTime, $endTime->copy()->subMinute()])
+                          ->orWhereRaw('? BETWEEN booking_time AND ADDTIME(booking_time, SEC_TO_TIME(duration_minutes * 60))', [$startTime->format('H:i:s')]);
+                })
+                ->exists();
+        });
+
+        if ($availableTherapists->isEmpty()) {
+            return back()->with('error', 'Semua therapist sudah dibooking di waktu ini.');
+        }
+
+        $bookingCounts = Booking::where('booking_date', $request->booking_date)
+            ->whereIn('therapist_id', $availableTherapists->pluck('id'))
+            ->select('therapist_id', DB::raw('count(*) as total'))
+            ->groupBy('therapist_id')
+            ->pluck('total', 'therapist_id');
+
+        $sorted = $availableTherapists->sortBy(fn($t) => $bookingCounts[$t->id] ?? 0);
+        $request->merge(['therapist_id' => $sorted->first()->id]);
+    } else {
+        $isOverlap = Booking::where('therapist_id', $request->therapist_id)
+            ->where('booking_date', $request->booking_date)
+            ->where('status', '!=', 'batal')
+            ->where(function ($query) use ($startTime, $endTime) {
+                $query->whereBetween('booking_time', [$startTime, $endTime->copy()->subMinute()])
+                      ->orWhereRaw('? BETWEEN booking_time AND ADDTIME(booking_time, SEC_TO_TIME(duration_minutes * 60))', [$startTime->format('H:i:s')]);
+            })
+            ->exists();
+
+        if ($isOverlap) {
+            return back()->with('error', 'Therapist yang Anda pilih sudah memiliki jadwal bentrok.');
+        }
+    }
+
+    $isHappyHour = $treatment->happy_hour_price &&
+        in_array(Carbon::parse($request->booking_date)->dayOfWeek, [1, 2, 3, 4, 5]) &&
+        Carbon::parse($request->booking_time)->between(
+            Carbon::createFromTimeString('10:00:00'),
+            Carbon::createFromTimeString('13:00:00')
+        );
+
+    Booking::create([
+        'user_id' => Auth::id(),
+        'guest_name' => null,
+        'guest_phone' => null,
+        'treatment_id' => $request->treatment_id,
+        'therapist_id' => $request->therapist_id,
+        'created_by' => Auth::id(),
+        'booking_date' => $request->booking_date,
+        'booking_time' => $request->booking_time,
+        'duration_minutes' => $treatment->duration_minutes,
+        'original_price' => $treatment->price,
+        'final_price' => $isHappyHour ? $treatment->happy_hour_price : $treatment->price,
+        'is_happy_hour' => $isHappyHour,
+        'is_promo_reward' => false,
+        'payment_method' => $request->payment_method,
+        'payment_status' => 'belum_bayar',
+        'status' => 'menunggu',
+        'note' => $request->note,
+    ]);
+
+    return redirect()->route('booking.riwayat')->with('success', 'Booking berhasil ditambahkan.');
+}
+
+
+// Digunakan saat admin input booking secara manual dari halaman admin
+public function storeAdmin(Request $request)
+{
+    $request->validate([
+        'treatment_id' => 'required|exists:treatments,id',
+        'booking_date' => 'required|date',
+        'booking_time' => 'required',
+        'therapist_id' => 'nullable|exists:users,id',
+        'payment_method' => 'required|in:cash,gateway',
+        'user_id' => 'nullable|exists:users,id',
+        'guest_name' => 'nullable|string',
+        'guest_phone' => 'nullable|string',
+    ]);
+
+      //waktu
+$bookingDateTime = Carbon::parse($request->booking_date . ' ' . $request->booking_time);
+if ($bookingDateTime->isPast()) {
+    return back()->with('error', 'Tidak bisa booking di waktu yang sudah lewat.');
+}
+if ($bookingDateTime->gt(now()->addDays(7))) {
+    return back()->with('error', 'Booking hanya bisa dilakukan maksimal 7 hari ke depan.');
+}
+
+    if (!$request->user_id && (!$request->guest_name || !$request->guest_phone)) {
+        return back()->with('error', 'Harap pilih customer atau isi data tamu guest.');
+    }
+
+    $treatment = Treatment::findOrFail($request->treatment_id);
+    $startTime = Carbon::parse($request->booking_time);
+    $endTime = $startTime->copy()->addMinutes($treatment->duration_minutes);
+
+    if (empty($request->therapist_id)) {
+        $availableTherapists = User::where('role', 'therapist')->get()->filter(function ($therapist) use ($request, $startTime, $endTime) {
+            return !Booking::where('therapist_id', $therapist->id)
+                ->where('booking_date', $request->booking_date)
+                ->where('status', '!=', 'batal')
+                ->where(function ($query) use ($startTime, $endTime) {
+                    $query->whereBetween('booking_time', [$startTime, $endTime->copy()->subMinute()])
+                          ->orWhereRaw('? BETWEEN booking_time AND ADDTIME(booking_time, SEC_TO_TIME(duration_minutes * 60))', [$startTime->format('H:i:s')]);
+                })
+                ->exists();
+        });
+
+        if ($availableTherapists->isEmpty()) {
+            return back()->with('error', 'Semua therapist sudah penuh pada waktu ini.');
+        }
+
+        $bookingCounts = Booking::where('booking_date', $request->booking_date)
+            ->whereIn('therapist_id', $availableTherapists->pluck('id'))
+            ->select('therapist_id', DB::raw('count(*) as total'))
+            ->groupBy('therapist_id')
+            ->pluck('total', 'therapist_id');
+
+        $sorted = $availableTherapists->sortBy(fn($t) => $bookingCounts[$t->id] ?? 0);
+        $request->merge(['therapist_id' => $sorted->first()->id]);
+    } else {
+        $isOverlap = Booking::where('therapist_id', $request->therapist_id)
+            ->where('booking_date', $request->booking_date)
+            ->where('status', '!=', 'batal')
+            ->where(function ($query) use ($startTime, $endTime) {
+                $query->whereBetween('booking_time', [$startTime, $endTime->copy()->subMinute()])
+                      ->orWhereRaw('? BETWEEN booking_time AND ADDTIME(booking_time, SEC_TO_TIME(duration_minutes * 60))', [$startTime->format('H:i:s')]);
+            })
+            ->exists();
+
+        if ($isOverlap) {
+            return back()->with('error', 'Therapist sudah memiliki booking bentrok di waktu tersebut.');
+        }
+    }
+
+    $isHappyHour = $treatment->happy_hour_price &&
+        in_array(Carbon::parse($request->booking_date)->dayOfWeek, [1, 2, 3, 4, 5]) &&
+        Carbon::parse($request->booking_time)->between(
+            Carbon::createFromTimeString('10:00:00'),
+            Carbon::createFromTimeString('13:00:00')
+        );
+
+    Booking::create([
+        'user_id' => $request->user_id,
+        'guest_name' => $request->guest_name,
+        'guest_phone' => $request->guest_phone,
+        'treatment_id' => $request->treatment_id,
+        'therapist_id' => $request->therapist_id,
+        'created_by' => Auth::id(),
+        'booking_date' => $request->booking_date,
+        'booking_time' => $request->booking_time,
+        'duration_minutes' => $treatment->duration_minutes,
+        'original_price' => $treatment->price,
+        'final_price' => $isHappyHour ? $treatment->happy_hour_price : $treatment->price,
+        'is_happy_hour' => $isHappyHour,
+        'is_promo_reward' => false,
+        'payment_method' => $request->payment_method,
+        'payment_status' => 'belum_bayar',
+        'status' => 'menunggu',
+        'note' => $request->note,
+    ]);
+
+    return redirect()->route('booking.admin')->with('success', 'Booking berhasil ditambahkan.');
+}
+
+
+public function getAvailableTherapists(Request $request)
+{
+    $tanggal = $request->tanggal;
+    $jam = $request->jam;
+    $treatmentId = $request->treatment_id;
+
+    if (!$tanggal || !$jam || !$treatmentId) {
+        return response()->json(['error' => 'Tanggal, jam, dan treatment wajib diisi'], 400);
+    }
+
+    $treatment = Treatment::find($treatmentId);
+    if (!$treatment) {
+        return response()->json(['error' => 'Treatment tidak ditemukan'], 404);
+    }
+
+    $startTime = Carbon::parse($jam);
+    $endTime = $startTime->copy()->addMinutes($treatment->duration_minutes);
+
+    // Filter therapist yang tidak bentrok di waktu tersebut
+    $therapists = User::where('role', 'therapist')->get()->filter(function ($therapist) use ($tanggal, $startTime, $endTime) {
+        return !Booking::where('therapist_id', $therapist->id)
+            ->where('booking_date', $tanggal)
+            ->where('status', '!=', 'batal')
+            ->where(function ($query) use ($startTime, $endTime) {
+                $query->whereBetween('booking_time', [$startTime, $endTime->copy()->subMinute()])
+                      ->orWhereRaw('? BETWEEN booking_time AND ADDTIME(booking_time, SEC_TO_TIME(duration_minutes * 60))', [$startTime->format('H:i:s')]);
+            })
+            ->exists();
+    });
+
+    // Hitung jumlah booking mereka di hari itu
+    $bookingCount = Booking::where('booking_date', $tanggal)
+        ->whereIn('therapist_id', $therapists->pluck('id'))
+        ->select('therapist_id', DB::raw('count(*) as total'))
+        ->groupBy('therapist_id')
+        ->pluck('total', 'therapist_id');
+
+    return response()->json([
+        'therapists' => $therapists->values(), // reset key agar JSON valid
+        'booking_count' => $bookingCount,
+    ]);
+}
+
+
+public function riwayatCustomer(Request $request)
+{
+    $query = Booking::with(['treatment', 'therapist'])
+        ->where('user_id', Auth::id());
+
+    if ($request->filled('status')) {
+        $query->where('status', $request->status);
+    }
+
+    if ($request->filled('search')) {
+        $query->whereHas('treatment', function ($q) use ($request) {
+            $q->where('name', 'like', '%' . $request->search . '%');
+        });
+    }
+
+    if ($request->filled('start_date')) {
+        $query->whereDate('booking_date', '>=', $request->start_date);
+    }
+
+    if ($request->filled('end_date')) {
+        $query->whereDate('booking_date', '<=', $request->end_date);
+    }
+
+    $order = $request->input('order', 'desc');
+    $query->orderBy('booking_date', $order)->orderBy('booking_time', $order);
+
+    $bookings = $query->paginate(8)->appends(request()->query());
+
+    return view('pages.riwayatbooking.riwayatbooking', compact('bookings'));
+}
+
+
+public function cancelBooking($id)
+{
+    $booking = Booking::where('id', $id)
+        ->where('user_id', Auth::id())
+        ->where('status', 'menunggu')
+        ->firstOrFail();
+
+    $booking->update([
+    'status' => 'batal',
+    'canceled_at' => now(),
+    'cancellation_reason' => 'Dibatalkan oleh customer',
+]);
+
+    return redirect()->back()->with('success', 'Booking berhasil dibatalkan.');
+}
+
+
+
+}

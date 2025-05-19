@@ -23,7 +23,7 @@
                         <a href="/kategori/treatmentpackages" class="block px-4 py-2 hover:bg-gray-200">Treatment
                             Packages</a>
                         <a href="/kategori/alacarte" class="block px-4 py-2 hover:bg-gray-200">Ala Carte</a>
-                        <a href="/kategori/prewedding" class="block px-4 py-2 hover:bg-gray-200">Prewedding</a>
+
                     </div>
                 </div>
                 {{-- <a href="/alltreatment" class="hover:text-gray-300">All Treatment</a> --}}
@@ -67,7 +67,7 @@
                     <a href="/kategori/treatmentpackages" class="block px-4 py-2 hover:bg-gray-200">Treatment
                         Packages</a>
                     <a href="/kategori/alacarte" class="block px-4 py-2 hover:bg-gray-200">Ala Carte</a>
-                    <a href="/kategori/prewedding" class="block px-4 py-2 hover:bg-gray-200">Prewedding</a>
+
                 </div>
             </div>
 
