@@ -9,13 +9,27 @@ use App\Models\TreatmentCategory;
 class TreatmentManajemenController extends Controller
 {
     //
-    public function index()
+public function index(Request $request)
 {
-    $treatments = Treatment::with('category')->get();
+    $query = Treatment::with('category');
+
+    if ($request->filled('search')) {
+        $query->where('name', 'like', '%' . $request->search . '%');
+    }
+
+    if ($request->filled('category')) {
+        $query->where('category_id', $request->category);
+    }
+
+    $order = $request->order ?? 'asc';
+    $query->orderBy('created_at', $order);
+
+    $treatments = $query->paginate(10); // pagination 10 per halaman
     $categories = TreatmentCategory::all();
 
     return view('pages.admin.manajementreatment', compact('treatments', 'categories'));
 }
+
 
 public function destroy($id)
 {
@@ -28,8 +42,21 @@ public function destroy($id)
 public function edit($id)
 {
     $treatment = Treatment::findOrFail($id);
-    return response()->json($treatment);
+
+    return response()->json([
+        'id' => $treatment->id,
+        'name' => $treatment->name,
+        'category_id' => $treatment->category_id,
+        'price' => $treatment->price,
+        'happy_hour_price' => $treatment->happy_hour_price,
+        'duration_minutes' => $treatment->duration_minutes,
+        'description' => $treatment->description,
+        'demo_video_url' => $treatment->demo_video_url,
+        'is_promo' => (bool) $treatment->is_promo,
+        'is_best_selling' => (bool) $treatment->is_best_selling,
+    ]);
 }
+
 
 public function update(Request $request, $id)
 {
@@ -46,7 +73,7 @@ public function update(Request $request, $id)
     ]);
 
     $validated['is_promo'] = $request->input('is_promo') == '1';
-    $validated['is_best_selling'] = $request->has('is_best_selling');
+    $validated['is_best_selling'] = $request->input('is_best_selling') == '1';
 
     Treatment::where('id', $id)->update($validated);
 
@@ -70,7 +97,7 @@ public function update(Request $request, $id)
     // Ubah nilai checkbox promo jadi default false jika tidak diceklis
     $validated['is_promo'] = $request->input('is_promo') == '1';
 
-    $validated['is_best_selling'] = $request->has('is_best_selling');
+    $validated['is_best_selling'] = $request->input('is_best_selling') == '1';
 
     Treatment::create($validated);
 

@@ -9,81 +9,106 @@
                 Paket</button>
         </div>
 
-        <div class="overflow-x-auto p-6 bg-white shadow-md rounded-lg">
-            <table class="w-full border-collapse min-w-[600px]">
-                <thead>
-                    <tr class="bg-gray-200 whitespace-nowrap">
-                        <th class="p-4 text-left">Nama Paket</th>
-                        <th class="p-4 text-left">Kategori</th>
-                        <th class="p-4 text-left">Harga Normal</th>
-                        <th class="p-4 text-left">Happy Hour</th>
-                        <th class="p-4 text-left">Durasi</th>
-                        <th class="p-4 text-left">Deskripsi</th>
-                        <th class="p-4 text-left">Promo</th>
-                        <th class="p-4 text-left">Best Selling</th>
-                        <th class="p-4 text-left">Video</th>
-                        <th class="p-4 text-left">Aksi</th>
-                    </tr>
-                </thead>
-                <tbody>
+        {{-- Filter --}}
+        <form method="GET" class="mb-4 flex flex-wrap gap-2 items-center">
+            <input type="text" name="search" placeholder="Cari nama paket..." value="{{ request('search') }}"
+                class="p-2 border rounded w-full md:w-64">
 
-                    @foreach ($treatments as $treatment)
-                        <tr class="border-b whitespace-nowrap">
-                            <td class="p-3">{{ $treatment->name }}</td>
-                            <td class="p-3">{{ $treatment->category->name ?? '-' }}</td>
-                            <td class="p-3">Rp {{ number_format($treatment->price, 0, ',', '.') }}</td>
-                            <td class="p-3">
-                                @if ($treatment->happy_hour_price)
-                                    Rp {{ number_format($treatment->happy_hour_price, 0, ',', '.') }}
-                                @else
-                                    -
-                                @endif
-                            </td>
-                            <td class="p-3">{{ $treatment->duration_minutes }} menit</td>
-                            <td class="p-3">{{ Str::limit($treatment->description, 50) }}</td>
-                            <td class="p-3">
-                                @if ($treatment->is_promo)
-                                    <span class="bg-green-500 text-white px-2 py-1 rounded">Promo</span>
-                                @else
-                                    <span class="bg-gray-400 text-white px-2 py-1 rounded">Tidak</span>
-                                @endif
-                            </td>
-                            <td class="p-3">
-                                @if ($treatment->is_best_selling)
-                                    <span class="bg-yellow-500 text-white px-2 py-1 rounded">Best Selling</span>
-                                @else
-                                    <span class="bg-gray-400 text-white px-2 py-1 rounded">Tidak</span>
-                                @endif
-                            </td>
-                            <td class="p-3">
-                                @if ($treatment->demo_video_url)
-                                    <a href="{{ $treatment->demo_video_url }}" class="text-blue-600 underline"
-                                        target="_blank">Video</a>
-                                @else
-                                    -
-                                @endif
-                            </td>
-                            <td class="p-3 flex flex-col md:flex-row gap-2">
-                                <button class="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600"
-                                    onclick="openModalEdit({{ $treatment->id }})">Edit</button>
-                                <form id="delete-treatment-{{ $treatment->id }}" method="POST"
-                                    action="{{ route('treatments.destroy', $treatment->id) }}">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="button" onclick="confirmDeleteTreatment({{ $treatment->id }})"
-                                        class="bg-red-500 text-white px-3 py-1 rounded hover:underline">
-                                        Hapus
-                                    </button>
-                                </form>
-                            </td>
+            <select name="category" class="p-2 border rounded bg-white">
+                <option value="">Semua Kategori</option>
+                @foreach ($categories as $cat)
+                    <option value="{{ $cat->id }}" {{ request('category') == $cat->id ? 'selected' : '' }}>
+                        {{ $cat->name }}
+                    </option>
+                @endforeach
+            </select>
+
+
+
+            <button type="submit" class="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600">Filter</button>
+            <a href="{{ route('treatments.index') }}" class="text-gray-600 underline hover:text-gray-800">Reset</a>
+        </form>
+
+        @if ($treatments->isEmpty())
+            <p class="text-center text-gray-500">Belum ada data treatment.</p>
+        @else
+            <div class="overflow-x-auto bg-white shadow-md rounded-lg">
+                <table class="min-w-full table-auto">
+                    <thead class="bg-yellow-500 text-white">
+                        <tr>
+                            <th class="py-3 px-4 text-left">Nama Paket</th>
+                            <th class="py-3 px-4 text-left">Kategori</th>
+                            <th class="py-3 px-4 text-left">Harga Normal</th>
+                            <th class="py-3 px-4 text-left">Happy Hour</th>
+                            <th class="py-3 px-4 text-left">Durasi</th>
+                            <th class="py-3 px-4 text-left">Deskripsi</th>
+                            <th class="py-3 px-4 text-left">Promo</th>
+                            <th class="py-3 px-4 text-left">Best Selling</th>
+                            <th class="py-3 px-4 text-left">Video</th>
+                            <th class="py-3 px-4 text-left">Aksi</th>
                         </tr>
-                    @endforeach
-                </tbody>
-            </table>
-        </div>
+                    </thead>
+                    <tbody>
+                        @foreach ($treatments as $treatment)
+                            <tr class="border-b hover:bg-gray-50 whitespace-nowrap">
+                                <td class="py-3 px-4">{{ $treatment->name }}</td>
+                                <td class="py-3 px-4">{{ $treatment->category->name ?? '-' }}</td>
+                                <td class="py-3 px-4">Rp {{ number_format($treatment->price, 0, ',', '.') }}</td>
+                                <td class="py-3 px-4">
+                                    {{ $treatment->happy_hour_price ? 'Rp ' . number_format($treatment->happy_hour_price, 0, ',', '.') : '-' }}
+                                </td>
+                                <td class="py-3 px-4">{{ $treatment->duration_minutes }} menit</td>
+                                <td class="py-3 px-4" title="{{ $treatment->description }}">
+                                    {{ Str::limit($treatment->description, 40) }}
+                                </td>
+                                <td class="py-3 px-4">
+                                    <span
+                                        class="px-3 py-1 text-sm rounded-full {{ $treatment->is_promo ? 'bg-green-100 text-green-700' : 'bg-gray-200 text-gray-600' }}">
+                                        {{ $treatment->is_promo ? 'Promo' : 'Tidak' }}
+                                    </span>
+                                </td>
+                                <td class="py-3 px-4">
+                                    <span
+                                        class="px-3 py-1 text-sm rounded-full {{ $treatment->is_best_selling ? 'bg-yellow-100 text-yellow-700' : 'bg-gray-200 text-gray-600' }}">
+                                        {{ $treatment->is_best_selling ? 'Best Selling' : 'Tidak' }}
+                                    </span>
+                                </td>
+                                <td class="py-3 px-4">
+                                    @if ($treatment->demo_video_url)
+                                        <a href="{{ $treatment->demo_video_url }}" class="text-blue-600 underline"
+                                            target="_blank">Tonton</a>
+                                    @else
+                                        <span class="text-gray-400">-</span>
+                                    @endif
+                                </td>
+                                <td class="py-3 px-4 space-y-2">
+                                    <button class="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600 w-full"
+                                        onclick="openModalEdit({{ $treatment->id }})">Edit</button>
+                                    <form id="delete-treatment-{{ $treatment->id }}" method="POST"
+                                        action="{{ route('treatments.destroy', $treatment->id) }}">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="button" onclick="confirmDeleteTreatment({{ $treatment->id }})"
+                                            class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 w-full">Hapus</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
 
+            {{-- Pagination --}}
+            <div class="mt-6">
+                {{ $treatments->appends(request()->except('page'))->links() }}
+            </div>
+        @endif
+
+        {{-- Modal tetap di sini --}}
+        {{-- (modal tetap pakai kode sebelumnya yang kamu punya) --}}
         <div id="modal"
             class="fixed inset-0 flex items-center justify-center bg-opacity-50 hidden z-50 overflow-y-auto">
+            {{-- ...modal content seperti sebelumnya --}}
             <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-lg relative max-h-screen overflow-auto">
                 <h3 class="text-lg font-semibold mb-4">Tambah/Edit Paket</h3>
 
@@ -140,11 +165,14 @@
         </div>
     </div>
 
+    {{-- Script dan SweetAlert tetap pakai kode sebelumnya --}}
     <script>
         function openModal() {
             // Reset form
             const form = document.getElementById("treatmentForm");
             form.reset();
+            form.is_promo.checked = false;
+            form.is_best_selling.checked = false;
 
             // Set action ke store
             form.action = "{{ route('treatments.store') }}";
@@ -168,8 +196,8 @@
                     form.duration_minutes.value = data.duration_minutes;
                     form.description.value = data.description ?? '';
                     form.demo_video_url.value = data.demo_video_url ?? '';
-                    form.is_promo.checked = data.is_promo == 1;
-                    form.is_best_selling.checked = data.is_best_selling == 1;
+                    form.is_promo.checked = data.is_promo;
+                    form.is_best_selling.checked = data.is_best_selling;
 
                     // Set ke mode UPDATE
                     form.action = `/treatments/${id}`;

@@ -8,7 +8,7 @@ use App\Models\TreatmentCategory;
 use App\Http\Controllers\TreatmentManajemenController;
 use App\Http\Controllers\TreatmentCategoryController;
 use App\Http\Controllers\BookingController;
-
+use App\Http\Controllers\TherapistController;
 
 
 // Rute default (bisa untuk semua)
@@ -43,10 +43,9 @@ Route::get('/gallery', function () {
 Route::middleware(['auth', 'verified', 'customer'])->group(function () {
     Route::get('/dashboard', [TreatmentCategoryController::class, 'index'])->name('dashboard');
     Route::post('/booking/customer', [BookingController::class, 'storeCustomer'])->name('booking.store.customer');
-    Route::post('/booking/admin', [BookingController::class, 'storeAdmin'])->name('booking.store.admin');
     Route::get('/api/available-therapists', [BookingController::class, 'getAvailableTherapists']);
     Route::get('/riwayatbooking', [BookingController::class, 'riwayatCustomer'])->name('booking.riwayat');
-    Route::delete('/riwayatbooking/{id}', [BookingController::class, 'cancelBooking'])->name('booking.cancel');
+    Route::delete('/riwayatbooking/{id}', [BookingController::class, 'cancelBookingCustomer'])->name('booking.cancel.customer');
     Route::get('/promo', [TreatmentCategoryController::class, 'promoTreatmentPage']);
 });
 
@@ -64,14 +63,28 @@ Route::middleware(['auth', 'verified'])->group(function () {
 // Rute Admin
 Route::middleware(['auth', 'verified', 'admin'])->group(function () {
     Route::get('/dashboard-admin', fn () => view('pages.admin.dashboard'));
+
     Route::get('/manajemen-booking', [BookingController::class, 'index'])->name('booking.admin');
+    Route::delete('/manajemen-booking/{id}', [BookingController::class, 'cancelBooking'])->name('booking.cancel');
+    Route::patch('/manajemen-booking/{id}/status/{status}', [BookingController::class, 'updateStatus'])->name('booking.updateStatus');
+    Route::patch('/manajemen-booking/{id}/bayar', [BookingController::class, 'markAsPaid'])->name('booking.markAsPaid');
+
     Route::get('/input-booking-manual', [BookingController::class, 'create'])->name('booking.manual');
-    Route::get('/manajemen-therapist', fn () => view('pages.admin.manajementherapist'));
+    Route::post('/booking/admin', [BookingController::class, 'storeAdmin'])->name('booking.store.admin');
+
+    Route::get('/manajemen-therapist', [TherapistController::class, 'index'])->name('therapist.index');
+    Route::get('/admin/manajemen-therapist', [TherapistController::class, 'index'])->name('therapist.index');
+    Route::delete('/manajemen-therapist/{id}', [TherapistController::class, 'destroy'])->name('therapist.destroy');
+    Route::post('/manajemen-therapist/store', [TherapistController::class, 'store'])->name('therapist.store');
+    Route::put('/manajemen-therapist/{id}', [TherapistController::class, 'update'])->name('therapist.update');
+
+
     Route::get('/manajemen-paket-treatment', [TreatmentManajemenController::class, 'index'])->name('treatments.index');
     Route::post('/manajemen-paket-treatment/store', [TreatmentManajemenController::class, 'store'])->name('treatments.store');
     Route::delete('/treatments/{id}', [TreatmentManajemenController::class, 'destroy'])->name('treatments.destroy');
     Route::get('/treatments/{id}/edit', [TreatmentManajemenController::class, 'edit']);
     Route::put('/treatments/{id}', [TreatmentManajemenController::class, 'update'])->name('treatments.update');
+    
     Route::get('/manajemen-promo', fn () => view('pages.admin.manajemenpromo'));
     Route::get('/manajemen-pelanggan', fn () => view('pages.admin.manajemenpelanggan'));
     Route::get('/manajemen-pembayaran', fn () => view('pages.admin.manajemenpembayaran'));

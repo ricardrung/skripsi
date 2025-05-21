@@ -26,7 +26,7 @@ class User extends Authenticatable
         'gender',
         'role',
         'photo',
-        'status',
+        'availability',
     ];
 
     /**
@@ -51,5 +51,10 @@ class User extends Authenticatable
             'password' => 'hashed',
             'birthdate' => 'date',
         ];
+    }
+
+    public function bookings()
+    {
+        return $this->hasMany(\App\Models\Booking::class, 'therapist_id');
     }
 }

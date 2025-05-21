@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Booking;
 use App\Models\Treatment;
+use App\Models\TreatmentCategory;
 use App\Models\User;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
@@ -13,15 +14,39 @@ use Illuminate\Support\Facades\DB;
 class BookingController extends Controller
 {
     //
-    public function index()
-    {
-        // Tampilkan booking untuk admin/customer
-        $bookings = Booking::with(['treatment', 'therapist', 'user', 'creator'])
-            ->orderByDesc('booking_date')
-            ->get();
+public function index(Request $request)
+{
+    $query = Booking::with(['treatment.category', 'therapist', 'user', 'creator']);
 
-        return view('pages.admin.manajemenbooking', compact('bookings'));
+    // 🔍 Filter berdasarkan nama layanan (search)
+    if ($request->filled('search')) {
+        $query->whereHas('treatment', function ($q) use ($request) {
+            $q->where('name', 'like', '%' . $request->search . '%');
+        });
     }
+
+    // 🔍 Filter berdasarkan status booking
+    if ($request->filled('status')) {
+        $query->where('status', $request->status);
+    }
+
+    // 🔍 Filter tanggal mulai & akhir
+    if ($request->filled('start_date')) {
+        $query->whereDate('booking_date', '>=', $request->start_date);
+    }
+
+    if ($request->filled('end_date')) {
+        $query->whereDate('booking_date', '<=', $request->end_date);
+    }
+
+    $bookings = $query->orderBy('booking_date', 'desc')->paginate(10);
+
+    // Kalau butuh kategori untuk dropdown kategori (meskipun tidak terlihat di Blade kamu sekarang)
+    $categories = \App\Models\TreatmentCategory::pluck('name', 'id');
+
+    return view('pages.admin.manajemenbooking', compact('bookings', 'categories'));
+}
+
 
     public function create()
     {
@@ -304,7 +329,7 @@ public function riwayatCustomer(Request $request)
 }
 
 
-public function cancelBooking($id)
+public function cancelBookingCustomer($id)
 {
     $booking = Booking::where('id', $id)
         ->where('user_id', Auth::id())
@@ -319,6 +344,45 @@ public function cancelBooking($id)
 
     return redirect()->back()->with('success', 'Booking berhasil dibatalkan.');
 }
+
+public function cancelBooking($id)
+{
+    $booking = Booking::where('id', $id)
+        ->where('status', 'menunggu')
+        ->firstOrFail();
+
+    $booking->update([
+        'status' => 'batal',
+        'canceled_at' => now(),
+        'cancellation_reason' => 'Dibatalkan oleh admin',
+    ]);
+
+    return redirect()->back()->with('success', 'Booking berhasil dibatalkan.');
+}
+
+public function updateStatus($id, $status)
+{
+    $booking = Booking::findOrFail($id);
+
+    if (!in_array($status, ['sedang', 'selesai'])) {
+        return back()->with('error', 'Status tidak valid.');
+    }
+
+    $booking->update(['status' => $status]);
+
+    return back()->with('success', "Status booking diubah menjadi '$status'.");
+}
+
+public function markAsPaid($id)
+{
+    $booking = Booking::findOrFail($id);
+
+    $booking->update(['payment_status' => 'sudah_bayar']);
+
+    return back()->with('success', 'Status pembayaran ditandai sebagai lunas.');
+}
+
+
 
 
 

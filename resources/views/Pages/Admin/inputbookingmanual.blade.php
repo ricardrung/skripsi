@@ -3,108 +3,111 @@
     <div class="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-md">
         <h2 class="text-2xl font-bold text-gray-700 mb-4">Input Booking Manual</h2>
 
-        <form>
+        @if (session('success'))
+            <div class="bg-green-200 text-green-800 px-4 py-2 rounded mb-4">{{ session('success') }}</div>
+        @endif
+
+        @if (session('error'))
+            <div class="bg-red-200 text-red-800 px-4 py-2 rounded mb-4">{{ session('error') }}</div>
+        @endif
+
+        <form action="{{ route('booking.store.admin') }}" method="POST">
             @csrf
 
-            <!-- Nama Pelanggan -->
+            {{-- Pilih User atau Guest --}}
             <div class="mb-4">
-                <label class="block text-gray-700">Nama Pelanggan</label>
-                <input type="text" name="nama" placeholder="Enter Full Name" class="w-full p-2 border rounded">
-            </div>
-
-            {{-- Gender --}}
-            <div class="mb-4">
-                <label class="block text-gray-700">Gender</label>
-                <select type="text" placeholder="Enter Gender" class="w-full p-2 border rounded" required>
-                    <option value="">Select Gender</option>
-                    <option value="Laki-laki">Laki-laki</option>
-                    <option value="Perempuan">Perempuan</option>
+                <label class="block text-gray-700">Pilih Customer Terdaftar</label>
+                <select name="user_id" id="user_id" class="w-full p-2 border rounded">
+                    <option value="">-- Pilih Customer --</option>
+                    @foreach ($customers as $user)
+                        <option value="{{ $user->id }}">{{ $user->name }} ({{ $user->email }})</option>
+                    @endforeach
                 </select>
             </div>
 
-            {{-- Email --}}
-            <div class="mb-4">
-                <label class="block text-gray-700">Email</label>
-                <input type="email" placeholder="Enter Email" class="w-full p-2 border rounded" required>
+            <div class="mb-4 text-center">
+                <p class="text-gray-500 text-sm">Atau jika tamu belum terdaftar:</p>
+                <button type="button" id="toggleGuest"
+                    class="mt-2 px-4 py-2 bg-yellow-500 rounded hover:bg-yellow-600 text-white">
+                    Isi Manual Data Tamu
+                </button>
             </div>
 
-            <!-- Nomor WA/Telepon -->
-            <div class="mb-4">
-                <label class="block text-gray-700">Nomor WhatsApp/Telepon</label>
-                <input type="text" name="nomor" placeholder="Enter Phone Number" class="w-full p-2 border rounded">
+            {{-- Input Guest (disembunyikan dulu) --}}
+            <div id="guestSection" class="hidden">
+                <div class="mb-4">
+                    <label class="block text-gray-700">Nama Tamu (Guest)</label>
+                    <input type="text" name="guest_name" class="w-full p-2 border rounded" placeholder="Nama tamu">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-gray-700">Nomor HP</label>
+                    <input type="text" name="guest_phone" class="w-full p-2 border rounded" placeholder="08xxxxxx">
+                </div>
             </div>
 
-            {{-- Birhtday --}}
-            <div class="mb-4">
-                <label class="block text-gray-700">Tanggal Lahir</label>
-                <input type="date" placeholder="Enter Birth Date" class="w-full p-2  border rounded" required>
-            </div>
-
-            <!-- Paket Treatment -->
+            {{-- Treatment --}}
             <div class="mb-4">
                 <label class="block text-gray-700">Paket Treatment</label>
-                <select name="paket" id="paket" required class="w-full p-2 border rounded">
+                <select name="treatment_id" id="paket" required class="w-full p-2 border rounded">
                     <option value="" disabled selected>Pilih Paket</option>
-                    <option value="30">Reflexology (30 Menit)</option>
-                    <option value="60">Full Body Massage (60 Menit)</option>
-                    <option value="90">Aromatherapy (90 Menit)</option>
+                    @foreach ($treatments as $treatment)
+                        <option value="{{ $treatment->id }}" data-duration="{{ $treatment->duration_minutes }}"
+                            data-price="{{ $treatment->price }}" data-happy="{{ $treatment->happy_hour_price }}">
+                            {{ $treatment->category->name ?? 'Tanpa Kategori' }} - {{ $treatment->name }}
+                            ({{ $treatment->duration_minutes }} Menit)
+                        </option>
+                    @endforeach
                 </select>
             </div>
 
-            <!-- Harga Treatment -->
             <div class="mb-4">
-                <label class="block text-gray-700">Harga Treatment</label>
-                <input type="number" name="harga" placeholder="Enter Price" required class="w-full p-2 border rounded">
+                <label class="block text-gray-700">Harga</label>
+                <input type="number" id="harga" class="w-full p-2 border rounded" readonly>
             </div>
 
-            <!-- Tanggal Treatment -->
+            {{-- Tanggal Booking --}}
             <div class="mb-4">
                 <label class="block text-gray-700">Tanggal Treatment</label>
-                <input type="date" name="tanggal" required class="w-full p-2 border rounded">
+                <input type="date" name="booking_date" required class="w-full p-2 border rounded">
             </div>
 
-            <!-- Jam Treatment -->
+            {{-- Jam Booking --}}
             <div class="mb-4">
                 <label class="block text-gray-700">Jam Treatment</label>
-                <select name="jam" id="jam" required class="w-full p-2 border rounded">
-                    <option value="" disabled selected>Pilih Jam</option>
+                <select name="booking_time" id="jam" required class="w-full p-2 border rounded">
+                    <option value="">Pilih jam</option>
                 </select>
             </div>
 
-            <!-- Therapist -->
+            {{-- Therapist --}}
             <div class="mb-4">
-                <label class="block text-gray-700">Therapist</label>
-                <select name="therapist" required class="w-full p-2 border rounded">
-                    <option value="Auto">Pilih Otomatis</option>
-                    <option value="Therapist A">Therapist A</option>
-                    <option value="Therapist B">Therapist B</option>
+                <label class="block text-gray-700">Pilih Therapist</label>
+                <select name="therapist_id" class="w-full p-2 border rounded">
+                    <option value="">Pilih Otomatis</option>
+                    @foreach ($therapists as $therapist)
+                        <option value="{{ $therapist->id }}">{{ $therapist->name }}</option>
+                    @endforeach
                 </select>
             </div>
 
-            <!-- Metode Pembayaran -->
+            {{-- Metode Bayar --}}
             <div class="mb-4">
                 <label class="block text-gray-700">Metode Pembayaran</label>
-                <select name="metode_pembayaran" required class="w-full p-2 border rounded">
-                    <option value="Cash">Cash</option>
-                    <option value="Transfer">Transfer</option>
-                    <option value="Payment Gateway">Payment Gateway</option>
+                <select name="payment_method" class="w-full p-2 border rounded" required>
+                    <option value="cash">Cash</option>
+                    <option value="gateway">Payment Gateway</option>
                 </select>
             </div>
 
-            <!-- Status Pembayaran -->
+            {{-- Note --}}
             <div class="mb-4">
-                <label class="block text-gray-700">Status Pembayaran</label>
-                <select name="status_pembayaran" required class="w-full p-2 border rounded">
-                    <option value="Pending">Pending</option>
-                    <option value="Paid">Paid</option>
-                    <option value="Processing">Processing</option>
-                    <option value="Completed">Completed</option>
-                </select>
+                <label class="block text-gray-700">Catatan (Opsional)</label>
+                <textarea name="note" class="w-full p-2 border rounded" rows="2"></textarea>
             </div>
 
-            <!-- Tombol Submit -->
+            {{-- Submit --}}
             <div class="mt-4">
-                <button type="submit" class="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600">Simpan
+                <button type="submit" class="w-full bg-yellow-500 hover:bg-yellow-600 text-white py-2 rounded">Simpan
                     Booking</button>
             </div>
         </form>
@@ -114,22 +117,26 @@
         document.addEventListener("DOMContentLoaded", function() {
             const paketSelect = document.getElementById("paket");
             const jamSelect = document.getElementById("jam");
+            const hargaInput = document.getElementById("harga");
+            const guestSection = document.getElementById("guestSection");
+            const toggleGuest = document.getElementById("toggleGuest");
 
             paketSelect.addEventListener("change", function() {
-                const durasi = parseInt(this.value); // Durasi treatment dalam menit
+                const selected = this.options[this.selectedIndex];
+                const durasi = parseInt(selected.dataset.duration);
+                const harga = selected.dataset.price;
+                hargaInput.value = harga;
                 generateJamOptions(durasi);
             });
 
             function generateJamOptions(durasi) {
-                jamSelect.innerHTML = '<option value="" disabled selected>Pilih Jam</option>'; // Reset dropdown
-
-                const jamBuka = 10 * 60; // 10:00 dalam menit
-                const jamTutup = 22 * 60; // 22:00 dalam menit
-                const interval = 30; // Interval 30 menit
-
-                for (let waktuMulai = jamBuka; waktuMulai + durasi <= jamTutup; waktuMulai += interval) {
-                    const jamMulai = formatWaktu(waktuMulai);
-                    const jamSelesai = formatWaktu(waktuMulai + durasi);
+                jamSelect.innerHTML = '<option value="">Pilih Jam</option>';
+                const jamBuka = 10 * 60;
+                const jamTutup = 22 * 60;
+                const interval = 30;
+                for (let mulai = jamBuka; mulai + durasi <= jamTutup; mulai += interval) {
+                    const jamMulai = formatTime(mulai);
+                    const jamSelesai = formatTime(mulai + durasi);
                     const option = document.createElement("option");
                     option.value = jamMulai;
                     option.textContent = `${jamMulai} - ${jamSelesai}`;
@@ -137,11 +144,15 @@
                 }
             }
 
-            function formatWaktu(totalMenit) {
-                const jam = Math.floor(totalMenit / 60);
-                const menit = totalMenit % 60;
-                return `${jam.toString().padStart(2, "0")}:${menit.toString().padStart(2, "0")}`;
+            function formatTime(totalMinutes) {
+                const hours = Math.floor(totalMinutes / 60);
+                const minutes = totalMinutes % 60;
+                return `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}`;
             }
+
+            toggleGuest.addEventListener("click", function() {
+                guestSection.classList.toggle("hidden");
+            });
         });
     </script>
 @endsection

@@ -94,88 +94,58 @@
         @if ($bookings->isEmpty())
             <p class="text-center text-gray-500">Belum ada riwayat booking.</p>
         @else
-            <div class="overflow-x-auto shadow-lg rounded-lg">
-                <table class="min-w-full bg-white rounded overflow-hidden">
-                    <thead class="bg-yellow-500 text-white">
-                        <tr>
-                            <th class="py-3 px-4 text-left">No</th>
-                            <th class="py-3 px-4 text-left">Layanan</th>
-                            <th class="py-3 px-4 text-left">Kategori</th>
-                            <th class="py-3 px-4 text-left">Tanggal</th>
-                            <th class="py-3 px-4 text-left">Harga</th>
-                            <th class="py-3 px-4 text-left">Status</th>
-                            <th class="py-3 px-4 text-left">Therapist</th>
-                            <th class="py-3 px-4 text-left">Durasi</th>
-                            <th class="py-3 px-4 text-left">Dipesan Pada</th>
-                            <th class="py-3 px-4 text-left">Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody id="bookingTable">
-                        @foreach ($bookings as $index => $booking)
-                            <tr class="border-b hover:bg-gray-50">
-                                <td class="py-3 px-4">
-                                    {{ ($bookings->currentPage() - 1) * $bookings->perPage() + $index + 1 }}</td>
-                                <td class="py-3 px-4">{{ $booking->treatment->name }}</td>
-                                <td class="py-3 px-4 capitalize">{{ $booking->treatment->category->name ?? '-' }}</td>
-                                <td class="py-3 px-4">
-                                    {{ \Carbon\Carbon::parse($booking->booking_date)->format('d M Y') }},
-                                    {{ \Carbon\Carbon::parse($booking->booking_time)->format('H:i') }}
-                                </td>
-                                <td class="py-3 px-4">Rp {{ number_format($booking->final_price, 0, ',', '.') }}</td>
-                                <td class="py-3 px-4">
-                                    @if ($booking->status == 'selesai')
-                                        <span
-                                            class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm">Selesai</span>
-                                    @elseif ($booking->status == 'menunggu')
-                                        <span
-                                            class="bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full text-sm">Menunggu</span>
-                                    @elseif ($booking->status == 'batal')
-                                        <span
-                                            class="bg-red-100 text-red-700 px-3 py-1 rounded-full text-sm">Dibatalkan</span>
-                                    @endif
-                                </td>
-                                <td class="py-3 px-4">{{ $booking->therapist->name ?? '-' }}</td>
-                                <td class="py-3 px-4">{{ $booking->treatment->duration_minutes ?? '-' }} menit</td>
-                                <td class="py-3 px-4">
-                                    {{ \Carbon\Carbon::parse($booking->created_at)->format('d M Y H:i') }}
-                                </td>
+            <div class="grid grid-cols-1 gap-6">
+                @foreach ($bookings as $booking)
+                    <div class="bg-white shadow-md rounded-lg p-6 space-y-2 relative">
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <h2 class="text-xl font-semibold text-[#2c1a0f]">{{ $booking->treatment->name }}</h2>
+                                <p class="text-sm text-gray-500 capitalize">
+                                    {{ $booking->treatment->category->name ?? '-' }}</p>
+                            </div>
+                            <div>
+                                @if ($booking->status == 'selesai')
+                                    <span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm">Selesai</span>
+                                @elseif ($booking->status == 'menunggu')
+                                    <span
+                                        class="bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full text-sm">Menunggu</span>
+                                @elseif ($booking->status == 'batal')
+                                    <span class="bg-red-100 text-red-700 px-3 py-1 rounded-full text-sm">Dibatalkan</span>
+                                @endif
+                            </div>
+                        </div>
 
+                        <p><strong>Tanggal:</strong> {{ \Carbon\Carbon::parse($booking->booking_date)->format('d M Y') }}
+                        </p>
+                        <p><strong>Jam:</strong> {{ \Carbon\Carbon::parse($booking->booking_time)->format('H:i') }}</p>
+                        <p><strong>Harga:</strong> Rp {{ number_format($booking->final_price, 0, ',', '.') }}</p>
+                        <p><strong>Therapist:</strong> {{ $booking->therapist->name ?? '-' }}</p>
+                        <p><strong>Durasi:</strong> {{ $booking->treatment->duration_minutes ?? '-' }} menit</p>
+                        <p><strong>Dipesan Pada:</strong>
+                            {{ \Carbon\Carbon::parse($booking->created_at)->format('d M Y H:i') }}</p>
 
-                                {{-- <td class="py-3 px-4">
-                                    @if ($booking->payment_status === 'sudah_bayar')
-                                        <span
-                                            class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm">Lunas</span>
-                                    @else
-                                        <span class="bg-red-100 text-red-700 px-3 py-1 rounded-full text-sm">Belum
-                                            Bayar</span>
-                                    @endif
-                                </td> --}}
+                        <div class="flex flex-wrap gap-2 mt-4">
+                            <button onclick="openDetailModal({{ $booking->id }})"
+                                class="bg-blue-100 text-blue-700 px-4 py-2 rounded text-sm hover:bg-blue-200 transition">
+                                <i class="fas fa-eye"></i> Detail
+                            </button>
 
-                                <td class="py-3 px-4 space-y-2">
-                                    <button onclick="openDetailModal({{ $booking->id }})"
-                                        class="inline-block w-full text-sm bg-blue-100 text-blue-700 px-3 py-1 rounded hover:bg-blue-200 transition">
-                                        <i class="fas fa-eye"></i> Detail
+                            @if ($booking->status == 'menunggu')
+                                <form id="cancelForm-{{ $booking->id }}" method="POST"
+                                    action="{{ route('booking.cancel.customer', $booking->id) }}">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="button" onclick="confirmCancel({{ $booking->id }})"
+                                        class="bg-red-100 text-red-700 px-4 py-2 rounded text-sm hover:bg-red-200 transition">
+                                        <i class="fas fa-times"></i> Batalkan
                                     </button>
-
-                                    @if ($booking->status == 'menunggu')
-                                        <form id="cancelForm-{{ $booking->id }}" method="POST"
-                                            action="{{ route('booking.cancel', $booking->id) }}">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="button" onclick="confirmCancel({{ $booking->id }})"
-                                                class="inline-flex items-center justify-center w-full text-sm bg-red-100 text-red-700 px-3 py-1 rounded hover:bg-red-200 transition whitespace-nowrap">
-                                                <i class="fas fa-times mr-1"></i> Batalkan
-                                            </button>
-                                        </form>
-                                    @endif
-                                </td>
-
-
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
+                                </form>
+                            @endif
+                        </div>
+                    </div>
+                @endforeach
             </div>
+
             <div class="mt-6">
                 {{ $bookings->appends(request()->except('page'))->links() }}
             </div>

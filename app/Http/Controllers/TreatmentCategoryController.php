@@ -16,7 +16,7 @@ class TreatmentCategoryController extends Controller
     })->get();
 
     $therapists = User::where('role', 'therapist')
-        ->where('status', 'tersedia')
+        ->where('availability', 'tersedia')
         ->get();
 
     return view('pages.kategori.facetreatment', compact('treatments', 'therapists'));
@@ -29,7 +29,7 @@ public function bodyTreatmentPage()
     })->get();
 
     $therapists = User::where('role', 'therapist')
-        ->where('status', 'tersedia')
+        ->where('availability', 'tersedia')
         ->get();
 
     return view('pages.kategori.bodytreatment', compact('treatments', 'therapists'));
@@ -42,7 +42,7 @@ public function hairTreatmentPage()
     })->get();
 
     $therapists = User::where('role', 'therapist')
-        ->where('status', 'tersedia')
+        ->where('availability', 'tersedia')
         ->get();
 
     return view('pages.kategori.hairtreatment', compact('treatments', 'therapists'));
@@ -55,7 +55,7 @@ public function reflexologyTreatmentPage()
     })->get();
 
     $therapists = User::where('role', 'therapist')
-        ->where('status', 'tersedia')
+        ->where('availability', 'tersedia')
         ->get();
 
     return view('pages.kategori.reflexology', compact('treatments', 'therapists'));
@@ -68,7 +68,7 @@ public function packagesTreatmentPage()
     })->get();
 
     $therapists = User::where('role', 'therapist')
-        ->where('status', 'tersedia')
+        ->where('availability', 'tersedia')
         ->get();
 
     return view('pages.kategori.treatmentpackages', compact('treatments', 'therapists'));
@@ -81,7 +81,7 @@ public function alacarteTreatmentPage()
     })->get();
 
     $therapists = User::where('role', 'therapist')
-        ->where('status', 'tersedia')
+        ->where('availability', 'tersedia')
         ->get();
 
     return view('pages.kategori.alacarte', compact('treatments', 'therapists'));
@@ -95,7 +95,7 @@ public function promoTreatmentPage()
     $treatments = Treatment::where('is_promo', true)->get();
 
     $therapists = User::where('role', 'therapist')
-        ->where('status', 'tersedia')
+        ->where('availability', 'tersedia')
         ->get();
 
     return view('pages.promo.promo', compact('treatments', 'therapists', 'jumlahTransaksi'));
