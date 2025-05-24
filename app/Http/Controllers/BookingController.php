@@ -382,6 +382,34 @@ public function markAsPaid($id)
     return back()->with('success', 'Status pembayaran ditandai sebagai lunas.');
 }
 
+public function manajemenPembayaran(Request $request)
+{
+    $query = Booking::with(['user', 'treatment'])
+        ->orderBy('created_at', 'desc');
+
+    if ($request->filled('search')) {
+        $query->whereHas('user', function ($q) use ($request) {
+            $q->where('name', 'like', '%' . $request->search . '%');
+        });
+    }
+
+    if ($request->filled('payment_status')) {
+        $query->where('payment_status', $request->payment_status);
+    }
+
+    $bookings = $query->paginate(10);
+
+    return view('pages.admin.manajemenpembayaran', compact('bookings'));
+}
+
+public function updateStatusBayar($id)
+{
+    $booking = Booking::findOrFail($id);
+    $booking->payment_status = 'sudah_bayar';
+    $booking->save();
+
+    return redirect()->back()->with('success', 'Status pembayaran diperbarui!');
+}
 
 
 
