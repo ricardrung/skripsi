@@ -36,7 +36,7 @@
         @else
             <div class="overflow-x-auto bg-white shadow-md rounded-lg">
                 <table class="min-w-full table-auto">
-                    <thead class="bg-yellow-500 text-white">
+                    <thead class="bg-yellow-500 text-white whitespace-nowrap">
                         <tr>
                             <th class="py-3 px-4 text-left">No</th>
                             <th class="py-3 px-4 text-left">Nama</th>

@@ -27,17 +27,15 @@
                 Reset
             </a>
         </form>
-        <form method="GET" action="{{ route('laporan.pemasukan.download') }}" class="flex flex-wrap gap-2 mb-4">
-            <input type="date" name="start_date" class="p-2 border rounded text-sm">
-            <input type="date" name="end_date" class="p-2 border rounded text-sm">
-            <select name="format" class="p-2 border rounded text-sm">
-                <option value="pdf">PDF</option>
-                <option value="excel">Excel</option>
-            </select>
+        <form method="GET" action="{{ route('laporan.pemasukan.download') }}"
+            class="mb-4 flex flex-wrap gap-2 items-center">
+            <input type="date" name="start_date" class="p-2 border rounded text-sm" value="{{ request('start_date') }}">
+            <input type="date" name="end_date" class="p-2 border rounded text-sm" value="{{ request('end_date') }}">
             <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 text-sm">
-                Download Laporan
+                Download Laporan (CSV)
             </button>
         </form>
+
 
 
         {{-- Tabel Pembayaran --}}
@@ -46,7 +44,7 @@
         @else
             <div class="overflow-x-auto bg-white shadow-md rounded-lg">
                 <table class="min-w-full table-auto">
-                    <thead class="bg-yellow-500 text-white">
+                    <thead class="bg-yellow-500 text-white whitespace-nowrap">
                         <tr>
                             <th class="py-3 px-4 text-left">No</th>
                             <th class="py-3 px-4 text-left">Nama</th>

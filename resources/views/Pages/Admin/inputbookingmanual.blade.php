@@ -107,7 +107,7 @@
 
             {{-- Submit --}}
             <div class="mt-4">
-                <button type="submit" class="w-full bg-yellow-500 hover:bg-yellow-600 text-white py-2 rounded">Simpan
+                <button type="submit" class="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 rounded">Simpan
                     Booking</button>
             </div>
         </form>

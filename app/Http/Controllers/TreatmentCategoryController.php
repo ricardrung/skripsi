@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Treatment;
 use App\Models\User;
+use Illuminate\Support\Facades\Auth;
+use App\Models\Booking;
 
 class TreatmentCategoryController extends Controller
 {
@@ -89,8 +91,15 @@ public function alacarteTreatmentPage()
 
 public function promoTreatmentPage()
 {
-    // Jumlah booking user, ganti dengan query riil dari database jika sudah ada
-    $jumlahTransaksi = session('jumlah_transaksi', 5); // nanti bisa dari DB
+    $userId = Auth::id();
+
+    $jumlahTransaksi = Booking::where('user_id', $userId)
+        ->where('status', 'selesai')
+        ->count();
+
+    $claimedPromoCount = Booking::where('user_id', $userId)
+        ->where('is_promo_reward', true)
+        ->count();
 
     $treatments = Treatment::where('is_promo', true)->get();
 
@@ -98,8 +107,15 @@ public function promoTreatmentPage()
         ->where('availability', 'tersedia')
         ->get();
 
-    return view('pages.promo.promo', compact('treatments', 'therapists', 'jumlahTransaksi'));
+    return view('pages.promo.promo', compact(
+        'treatments',
+        'therapists',
+        'jumlahTransaksi',
+        'claimedPromoCount'
+    ));
 }
+
+
 
 public function index()
     {

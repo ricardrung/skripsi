@@ -34,7 +34,7 @@
         @else
             <div class="overflow-x-auto bg-white shadow-md rounded-lg">
                 <table class="min-w-full table-auto">
-                    <thead class="bg-yellow-500 text-white">
+                    <thead class="bg-yellow-500 text-white whitespace-nowrap">
                         <tr>
                             <th class="py-3 px-4 text-left">Nama Paket</th>
                             <th class="py-3 px-4 text-left">Kategori</th>
@@ -45,6 +45,7 @@
                             <th class="py-3 px-4 text-left">Promo</th>
                             <th class="py-3 px-4 text-left">Best Selling</th>
                             <th class="py-3 px-4 text-left">Video</th>
+                            <th class="py-3 px-4 text-left">Status</th>
                             <th class="py-3 px-4 text-left">Aksi</th>
                         </tr>
                     </thead>
@@ -81,8 +82,14 @@
                                         <span class="text-gray-400">-</span>
                                     @endif
                                 </td>
+                                <td class="py-3 px-4">
+                                    <span
+                                        class="px-3 py-1 text-sm rounded-full {{ $treatment->is_available ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">
+                                        {{ $treatment->is_available ? 'Tersedia' : 'Tidak Tersedia' }}
+                                    </span>
+                                </td>
                                 <td class="py-3 px-4 space-y-2">
-                                    <button class="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600 w-full"
+                                    <button class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 w-full"
                                         onclick="openModalEdit({{ $treatment->id }})">Edit</button>
                                     <form id="delete-treatment-{{ $treatment->id }}" method="POST"
                                         action="{{ route('treatments.destroy', $treatment->id) }}">
@@ -104,11 +111,9 @@
             </div>
         @endif
 
-        {{-- Modal tetap di sini --}}
-        {{-- (modal tetap pakai kode sebelumnya yang kamu punya) --}}
+
         <div id="modal"
             class="fixed inset-0 flex items-center justify-center bg-opacity-50 hidden z-50 overflow-y-auto">
-            {{-- ...modal content seperti sebelumnya --}}
             <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-lg relative max-h-screen overflow-auto">
                 <h3 class="text-lg font-semibold mb-4">Tambah/Edit Paket</h3>
 
@@ -154,6 +159,13 @@
                             class="mr-2">
                         <label for="is_best_selling">Tandai sebagai Best Selling</label>
                     </div>
+                    <div class="flex items-center mb-2">
+                        <input type="hidden" name="is_available" value="0"> {{-- default jika tidak dicentang --}}
+                        <input type="checkbox" name="is_available" id="is_available" value="1" class="mr-2"
+                            checked>
+                        <label for="is_available">Tersedia untuk Dipesan</label>
+                    </div>
+
                     <div class="flex justify-end">
                         <button type="button" class="mr-2 bg-gray-400 px-4 py-2 rounded"
                             onclick="closeModal()">Batal</button>
@@ -173,6 +185,8 @@
             form.reset();
             form.is_promo.checked = false;
             form.is_best_selling.checked = false;
+            form.is_available.checked = true;
+
 
             // Set action ke store
             form.action = "{{ route('treatments.store') }}";
@@ -198,6 +212,8 @@
                     form.demo_video_url.value = data.demo_video_url ?? '';
                     form.is_promo.checked = data.is_promo;
                     form.is_best_selling.checked = data.is_best_selling;
+                    form.is_available.checked = data.is_available;
+
 
                     // Set ke mode UPDATE
                     form.action = `/treatments/${id}`;

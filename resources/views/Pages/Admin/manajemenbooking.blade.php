@@ -12,6 +12,7 @@
             <select name="status" class="p-2 border rounded bg-white w-full sm:w-48">
                 <option value="">Semua Status</option>
                 <option value="menunggu" {{ request('status') == 'menunggu' ? 'selected' : '' }}>Menunggu</option>
+                <option value="sedang" {{ request('status') == 'sedang' ? 'selected' : '' }}>Sedang</option>
                 <option value="selesai" {{ request('status') == 'selesai' ? 'selected' : '' }}>Selesai</option>
                 <option value="batal" {{ request('status') == 'batal' ? 'selected' : '' }}>Dibatalkan</option>
             </select>
@@ -37,7 +38,7 @@
         @else
             <div class="overflow-x-auto bg-white shadow-md rounded-lg">
                 <table class="min-w-full table-auto">
-                    <thead class="bg-yellow-500 text-white">
+                    <thead class="bg-yellow-500 text-white whitespace-nowrap">
                         <tr>
                             <th class="py-3 px-4 text-left">No</th>
                             <th class="py-3 px-4 text-left">Pelanggan</th>

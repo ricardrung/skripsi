@@ -11,6 +11,7 @@ use App\Http\Controllers\BookingController;
 use App\Http\Controllers\TherapistController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\LaporanController;
+use App\Http\Controllers\DashboardController;
 
 // Rute default (bisa untuk semua)
 Route::get('/', [TreatmentCategoryController::class, 'index']);
@@ -63,7 +64,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
 // Rute Admin
 Route::middleware(['auth', 'verified', 'admin'])->group(function () {
-    Route::get('/dashboard-admin', fn () => view('pages.admin.dashboard'));
+    Route::get('/dashboard-admin', [DashboardController::class, 'index'])->name('admin.dashboard');
+
 
     Route::get('/manajemen-booking', [BookingController::class, 'index'])->name('booking.admin');
     Route::delete('/manajemen-booking/{id}', [BookingController::class, 'cancelBooking'])->name('booking.cancel');
@@ -83,6 +85,7 @@ Route::middleware(['auth', 'verified', 'admin'])->group(function () {
     Route::get('/manajemen-paket-treatment', [TreatmentManajemenController::class, 'index'])->name('treatments.index');
     Route::post('/manajemen-paket-treatment/store', [TreatmentManajemenController::class, 'store'])->name('treatments.store');
     Route::delete('/treatments/{id}', [TreatmentManajemenController::class, 'destroy'])->name('treatments.destroy');
+    Route::get('/treatments/{id}/edit', [TreatmentManajemenController::class, 'edit']);
     Route::put('/treatments/{id}', [TreatmentManajemenController::class, 'update'])->name('treatments.update');
     
     Route::get('/manajemen-promo', fn () => view('pages.admin.manajemenpromo'));
@@ -95,7 +98,7 @@ Route::middleware(['auth', 'verified', 'admin'])->group(function () {
 
     Route::get('/manajemen-pembayaran', [BookingController::class, 'manajemenPembayaran'])->name('booking.manajemen.pembayaran');
     Route::patch('/booking/{id}/status-bayar', [BookingController::class, 'updateStatusBayar'])->name('booking.update.status.bayar');
-    Route::get('/laporan-pemasukan/download', [LaporanController::class, 'download'])->name('laporan.pemasukan.download');
+    Route::get('/laporan-pemasukan/download', [LaporanController::class, 'downloadCsv'])->name('laporan.pemasukan.download');
 
 });
 

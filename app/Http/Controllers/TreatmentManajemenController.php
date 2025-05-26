@@ -54,6 +54,7 @@ public function edit($id)
         'demo_video_url' => $treatment->demo_video_url,
         'is_promo' => (bool) $treatment->is_promo,
         'is_best_selling' => (bool) $treatment->is_best_selling,
+        'is_available' => (bool) $treatment->is_available,
     ]);
 }
 
@@ -70,10 +71,13 @@ public function update(Request $request, $id)
         'category_id' => 'required|exists:treatment_categories,id',
         'is_promo' => 'nullable|boolean',
         'is_best_selling' => 'nullable|boolean',
+        'is_available' => 'nullable|boolean',
     ]);
 
     $validated['is_promo'] = $request->input('is_promo') == '1';
     $validated['is_best_selling'] = $request->input('is_best_selling') == '1';
+    $validated['is_available'] = $request->input('is_available') == '1';
+
 
     Treatment::where('id', $id)->update($validated);
 
@@ -92,12 +96,17 @@ public function update(Request $request, $id)
         'is_promo' => 'nullable|boolean',
         'category_id' => 'required|exists:treatment_categories,id',
         'is_best_selling' => 'nullable|boolean',
+        'is_available' => 'nullable|boolean',
+
     ]);
 
     // Ubah nilai checkbox promo jadi default false jika tidak diceklis
     $validated['is_promo'] = $request->input('is_promo') == '1';
 
     $validated['is_best_selling'] = $request->input('is_best_selling') == '1';
+
+    $validated['is_available'] = $request->input('is_available') == '1';
+
 
     Treatment::create($validated);
 

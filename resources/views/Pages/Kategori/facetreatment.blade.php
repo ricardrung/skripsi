@@ -125,8 +125,8 @@
 
                                     <!-- Tanggal -->
                                     <div>
-                                        <label for="tanggal" class="block font-semibold">Tanggal:</label>
-                                        <input type="date" id="tanggal" name="booking_date"
+                                        <label for="booking_date" class="block font-semibold">Tanggal:</label>
+                                        <input type="date" id="booking_date" name="booking_date"
                                             class="w-full p-2 border rounded" required>
                                     </div>
 
@@ -246,13 +246,13 @@
                             const day = String(today.getDate()).padStart(2, '0');
 
                             const localDate = `${year}-${month}-${day}`; // Format YYYY-MM-DD
-                            document.getElementById("tanggal").setAttribute("min", localDate);
+                            document.getElementById("booking_date").setAttribute("min", localDate);
                         }
 
 
                         // Perbarui pilihan jam sesuai tanggal yang dipilih
                         function updateJam() {
-                            const tanggal = document.getElementById("tanggal").value;
+                            const tanggal = document.getElementById("booking_date").value;
                             const jamSelect = document.getElementById("booking_time"); // perbaikan di sini
 
                             if (!tanggal) return;
@@ -299,10 +299,10 @@
                             hargaText.textContent = "Rp" + hargaNormal.toLocaleString();
                         }
 
-                        document.getElementById("tanggal").addEventListener("change", updateJam);
+                        document.getElementById("booking_date").addEventListener("change", updateJam);
 
                         function fetchAvailableTherapists() {
-                            const tanggal = document.getElementById('tanggal').value;
+                            const tanggal = document.getElementById('booking_date').value;
                             const jam = document.getElementById('booking_time').value;
                             const treatmentId = document.getElementById('treatment_id').value;
 
@@ -332,7 +332,7 @@
                         }
 
                         // Panggil saat user ganti tanggal / jam / treatment
-                        document.getElementById('tanggal').addEventListener('change', () => {
+                        document.getElementById('booking_date').addEventListener('change', () => {
                             updateJam(); // tetap panggil ini
                             setTimeout(fetchAvailableTherapists, 100); // tunggu 0.1 detik agar booking_time sudah update
                         });

@@ -70,15 +70,19 @@ public function storeCustomer(Request $request)
     ]);
 
     //waktu
-$bookingDateTime = Carbon::parse($request->booking_date . ' ' . $request->booking_time);
-if ($bookingDateTime->isPast()) {
-    return back()->with('error', 'Tidak bisa booking di waktu yang sudah lewat.');
-}
-if ($bookingDateTime->gt(now()->addDays(7))) {
-    return back()->with('error', 'Booking hanya bisa dilakukan maksimal 7 hari ke depan.');
-}
+    $bookingDateTime = Carbon::parse($request->booking_date . ' ' . $request->booking_time);
+    if ($bookingDateTime->isPast()) {
+        return back()->with('error', 'Tidak bisa booking di waktu yang sudah lewat.');
+    }
+    if ($bookingDateTime->gt(now()->addDays(7))) {
+        return back()->with('error', 'Booking hanya bisa dilakukan maksimal 7 hari ke depan.');
+    }
 
-    $treatment = Treatment::findOrFail($request->treatment_id);
+    $treatment = Treatment::where('id', $request->treatment_id)->where('is_available', true)->first();
+        if (!$treatment) {
+            return back()->with('error', 'Treatment ini tidak tersedia untuk saat ini.');
+        }
+
     $startTime = Carbon::parse($request->booking_time);
     $endTime = $startTime->copy()->addMinutes($treatment->duration_minutes);
 
@@ -128,6 +132,34 @@ if ($bookingDateTime->gt(now()->addDays(7))) {
             Carbon::createFromTimeString('13:00:00')
         );
 
+        // Cek jika promo reward
+    $isPromoReward = $request->input('is_promo_reward') == true;
+
+    if ($isPromoReward) {
+        $bookingCount = Booking::where('user_id', Auth::id())
+            ->where('status', 'selesai')
+            ->count();
+
+        $eligiblePromoCount = floor($bookingCount / 5);
+
+        $claimedPromoCount = Booking::where('user_id', Auth::id())
+            ->where('is_promo_reward', true)
+            ->count();
+
+        if ($eligiblePromoCount <= $claimedPromoCount) {
+            return back()->withErrors(['Anda belum memenuhi syarat untuk promo gratis.']);
+        }
+    }
+
+    $finalPrice = $treatment->price;
+
+    if ($isPromoReward) {
+        $finalPrice = 0;
+    } elseif ($isHappyHour) {
+        $finalPrice = $treatment->happy_hour_price;
+    }
+
+
     Booking::create([
         'user_id' => Auth::id(),
         'guest_name' => null,
@@ -139,9 +171,9 @@ if ($bookingDateTime->gt(now()->addDays(7))) {
         'booking_time' => $request->booking_time,
         'duration_minutes' => $treatment->duration_minutes,
         'original_price' => $treatment->price,
-        'final_price' => $isHappyHour ? $treatment->happy_hour_price : $treatment->price,
+        'final_price' => $finalPrice,
         'is_happy_hour' => $isHappyHour,
-        'is_promo_reward' => false,
+        'is_promo_reward' => $isPromoReward,
         'payment_method' => $request->payment_method,
         'payment_status' => 'belum_bayar',
         'status' => 'menunggu',
@@ -179,7 +211,12 @@ if ($bookingDateTime->gt(now()->addDays(7))) {
         return back()->with('error', 'Harap pilih customer atau isi data tamu guest.');
     }
 
-    $treatment = Treatment::findOrFail($request->treatment_id);
+    //Jika Treatment tidak tersedia
+    $treatment = Treatment::where('id', $request->treatment_id)->where('is_available', true)->first();
+        if (!$treatment) {
+            return back()->with('error', 'Treatment ini tidak tersedia untuk saat ini.');
+        }
+
     $startTime = Carbon::parse($request->booking_time);
     $endTime = $startTime->copy()->addMinutes($treatment->duration_minutes);
 
@@ -362,16 +399,29 @@ public function cancelBooking($id)
 
 public function updateStatus($id, $status)
 {
-    $booking = Booking::findOrFail($id);
+    $booking = Booking::with('therapist')->findOrFail($id);
 
     if (!in_array($status, ['sedang', 'selesai'])) {
         return back()->with('error', 'Status tidak valid.');
     }
 
+    // Update status booking
     $booking->update(['status' => $status]);
+
+    // Update availability therapist (jika ada therapist-nya)
+    if ($booking->therapist) {
+        if ($status === 'sedang') {
+            $booking->therapist->update(['availability' => 'sedang menangani']);
+        }
+
+        if ($status === 'selesai') {
+            $booking->therapist->update(['availability' => 'tersedia']);
+        }
+    }
 
     return back()->with('success', "Status booking diubah menjadi '$status'.");
 }
+
 
 public function markAsPaid($id)
 {
