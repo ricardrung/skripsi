@@ -19,6 +19,7 @@ class Treatment extends Model
         'is_promo',
         'is_best_selling',
         'promo_required_bookings',
+        'room_type',
     ];
 
     public function category()

@@ -41,6 +41,7 @@
                             <th class="py-3 px-4 text-left">Harga Normal</th>
                             <th class="py-3 px-4 text-left">Happy Hour</th>
                             <th class="py-3 px-4 text-left">Durasi</th>
+                            <th class="py-3 px-4 text-left">Tipe Ruangan</th>
                             <th class="py-3 px-4 text-left">Deskripsi</th>
                             <th class="py-3 px-4 text-left">Promo</th>
                             <th class="py-3 px-4 text-left">Best Selling</th>
@@ -59,6 +60,7 @@
                                     {{ $treatment->happy_hour_price ? 'Rp ' . number_format($treatment->happy_hour_price, 0, ',', '.') : '-' }}
                                 </td>
                                 <td class="py-3 px-4">{{ $treatment->duration_minutes }} menit</td>
+                                <td class="py-3 px-4">{{ $treatment->room_type ?? '-' }}</td>
                                 <td class="py-3 px-4" title="{{ $treatment->description }}">
                                     {{ Str::limit($treatment->description, 40) }}
                                 </td>
@@ -145,6 +147,13 @@
                         <option value="90">90 Menit</option>
                         <option value="150">150 Menit</option>
                     </select>
+                    <select name="room_type" class="border rounded p-2 w-full mb-2" required>
+                        <option value="">-- Pilih Tipe Ruangan --</option>
+                        @foreach ($roomTypes as $type)
+                            <option value="{{ $type }}">{{ ucfirst($type) }}</option>
+                        @endforeach
+                    </select>
+
                     <textarea name="description" placeholder="Deskripsi" class="border rounded p-2 w-full mb-2"></textarea>
                     <input type="url" name="demo_video_url" placeholder="Link Video Demo"
                         class="border rounded p-2 w-full mb-2">
@@ -213,6 +222,8 @@
                     form.is_promo.checked = data.is_promo;
                     form.is_best_selling.checked = data.is_best_selling;
                     form.is_available.checked = data.is_available;
+                    form.room_type.value = data.room_type;
+
 
 
                     // Set ke mode UPDATE

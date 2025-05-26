@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Treatment;
 use App\Models\TreatmentCategory;
+use App\Models\SpaRoom;
+
 
 class TreatmentManajemenController extends Controller
 {
@@ -27,7 +29,9 @@ public function index(Request $request)
     $treatments = $query->paginate(10); // pagination 10 per halaman
     $categories = TreatmentCategory::all();
 
-    return view('pages.admin.manajementreatment', compact('treatments', 'categories'));
+    $roomTypes = SpaRoom::select('room_type')->distinct()->pluck('room_type');
+
+    return view('pages.admin.manajementreatment', compact('treatments', 'categories', 'roomTypes'));
 }
 
 
@@ -55,6 +59,7 @@ public function edit($id)
         'is_promo' => (bool) $treatment->is_promo,
         'is_best_selling' => (bool) $treatment->is_best_selling,
         'is_available' => (bool) $treatment->is_available,
+        'room_type' => $treatment->room_type,
     ]);
 }
 
@@ -72,11 +77,14 @@ public function update(Request $request, $id)
         'is_promo' => 'nullable|boolean',
         'is_best_selling' => 'nullable|boolean',
         'is_available' => 'nullable|boolean',
+        'room_type' => 'required|string',
     ]);
 
     $validated['is_promo'] = $request->input('is_promo') == '1';
     $validated['is_best_selling'] = $request->input('is_best_selling') == '1';
     $validated['is_available'] = $request->input('is_available') == '1';
+    $validated['room_type'] = $request->room_type;
+
 
 
     Treatment::where('id', $id)->update($validated);
@@ -97,7 +105,7 @@ public function update(Request $request, $id)
         'category_id' => 'required|exists:treatment_categories,id',
         'is_best_selling' => 'nullable|boolean',
         'is_available' => 'nullable|boolean',
-
+        'room_type' => 'required|string',
     ]);
 
     // Ubah nilai checkbox promo jadi default false jika tidak diceklis
@@ -106,6 +114,9 @@ public function update(Request $request, $id)
     $validated['is_best_selling'] = $request->input('is_best_selling') == '1';
 
     $validated['is_available'] = $request->input('is_available') == '1';
+
+    $validated['room_type'] = $request->room_type;
+
 
 
     Treatment::create($validated);

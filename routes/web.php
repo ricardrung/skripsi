@@ -13,6 +13,7 @@ use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\LaporanController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\SpaRoomController;
 
 // Rute default (bisa untuk semua)
 Route::get('/', [TreatmentCategoryController::class, 'index']);
@@ -38,9 +39,7 @@ Route::get('/contact', function () {
     return view('pages.contact.contact');
 });
 
-Route::get('/gallery', function () {
-    return view('pages.gallery.gallery');
-});
+Route::get('/gallery', [SpaRoomController::class, 'gallery'])->name('gallery');
 
 
 // Rute Customer
@@ -90,7 +89,9 @@ Route::middleware(['auth', 'verified', 'admin'])->group(function () {
     Route::get('/treatments/{id}/edit', [TreatmentManajemenController::class, 'edit']);
     Route::put('/treatments/{id}', [TreatmentManajemenController::class, 'update'])->name('treatments.update');
     
-    Route::get('/manajemen-promo', fn () => view('pages.admin.manajemenpromo'));
+    Route::get('/manajemen-ruangan', [SpaRoomController::class, 'index'])->name('spa_rooms.index');
+    // Resource lengkap (CRUD)
+    Route::resource('spa_rooms', SpaRoomController::class)->except(['index', 'show']);
 
     Route::get('/manajemen-pelanggan', [CustomerController::class, 'index'])->name('customers.index');
     Route::post('/manajemen-pelanggan', [CustomerController::class, 'store'])->name('customers.store');
@@ -115,7 +116,7 @@ Route::middleware(BlockAdminFromPublic::class)->group(function () {
     Route::get('/kategori/alacarte', [TreatmentCategoryController::class, 'alacarteTreatmentPage']);
     // Route::get('/kategori/prewedding', fn () => view('pages.kategori.prewedding'));
     Route::get('/contact', fn () => view('pages.contact.contact'));
-    Route::get('/gallery', fn () => view('pages.gallery.gallery'));
+    Route::get('/gallery', [SpaRoomController::class, 'gallery'])->name('gallery');
 });
 
 // Route::get('/dashboard1', function () {

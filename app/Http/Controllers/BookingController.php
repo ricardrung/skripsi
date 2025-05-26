@@ -161,6 +161,26 @@ public function storeCustomer(Request $request)
         $finalPrice = $treatment->happy_hour_price;
     }
 
+        // 1. Ambil treatment & room_type-nya
+    $treatment = Treatment::findOrFail($request->treatment_id);
+    $roomType = $treatment->room_type;
+
+    // 2. Ambil kapasitas maksimal ruangan dari spa_rooms
+    $maxCapacity = \App\Models\SpaRoom::where('room_type', $roomType)->sum('capacity');
+
+    // 3. Hitung jumlah booking yang sudah dilakukan pada waktu yang sama
+    $existingBookingCount = \App\Models\Booking::where('booking_date', $request->booking_date)
+        ->where('booking_time', $request->booking_time)
+        ->whereHas('treatment', function ($query) use ($roomType) {
+            $query->where('room_type', $roomType);
+        })->count();
+
+    // 4. Cek kapasitas
+    if ($existingBookingCount >= $maxCapacity) {
+        return back()->with('error', 'Maaf, semua ruangan untuk treatment ini penuh pada waktu tersebut.');
+    }
+
+
 
     Booking::create([
         'user_id' => Auth::id(),
@@ -296,6 +316,26 @@ if ($bookingDateTime->gt(now()->addDays(7))) {
             Carbon::createFromTimeString('10:00:00'),
             Carbon::createFromTimeString('13:00:00')
         );
+
+     // 1. Ambil treatment & room_type-nya
+    $treatment = Treatment::findOrFail($request->treatment_id);
+    $roomType = $treatment->room_type;
+
+    // 2. Ambil kapasitas maksimal ruangan dari spa_rooms
+    $maxCapacity = \App\Models\SpaRoom::where('room_type', $roomType)->sum('capacity');
+
+    // 3. Hitung jumlah booking yang sudah dilakukan pada waktu yang sama
+    $existingBookingCount = \App\Models\Booking::where('booking_date', $request->booking_date)
+        ->where('booking_time', $request->booking_time)
+        ->whereHas('treatment', function ($query) use ($roomType) {
+            $query->where('room_type', $roomType);
+        })->count();
+
+    // 4. Cek kapasitas
+    if ($existingBookingCount >= $maxCapacity) {
+        return back()->with('error', 'Maaf, semua ruangan untuk treatment ini penuh pada waktu tersebut.');
+    }
+
 
     Booking::create([
         'user_id' => $request->user_id,

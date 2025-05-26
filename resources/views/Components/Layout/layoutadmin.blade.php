@@ -50,12 +50,12 @@
                     <i class="fas fa-box"></i> <span class="sidebar-text">Manajemen Paket Treatment</span>
                 </a>
             </li>
-            {{-- <li>
-                <a href="/manajemen-bahan-treatment" class="p-6 hover:bg-[#3a2416] flex items-center space-x-3 block">
-                    <i class="fas fa-flask"></i> <span class="sidebar-text">Manajemen Ketersediaan Bahan
-                        Treatment</span>
+            <li>
+                <a href="/manajemen-ruangan" class="p-6 hover:bg-[#3a2416] flex items-center space-x-3 block">
+                    <i class="fas fa-flask"></i> <span class="sidebar-text">Manajemen Ruangan
+                    </span>
                 </a>
-            </li> --}}
+            </li>
             {{-- <li>
                 <a href="/manajemen-promo" class="p-6 hover:bg-[#3a2416] flex items-center space-x-3 block">
                     <i class="fa-solid fa-receipt"></i><span class="sidebar-text">Manajemen promo</span>
