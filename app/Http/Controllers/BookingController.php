@@ -10,6 +10,8 @@ use App\Models\User;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Midtrans\Config;
+use Midtrans\Snap;
 
 class BookingController extends Controller
 {
@@ -179,6 +181,35 @@ public function storeCustomer(Request $request)
         'status' => 'menunggu',
         'note' => $request->note,
     ]);
+
+     //payment gateway 
+        $booking = Booking::latest()->first();
+
+    if ($booking->payment_method === 'gateway') {
+        Config::$serverKey = config('midtrans.serverKey');
+        Config::$isProduction = config('midtrans.isProduction');
+        Config::$isSanitized = config('midtrans.isSanitized');
+        Config::$is3ds = config('midtrans.is3ds');
+
+        $params = [
+            'transaction_details' => [
+                'order_id' => 'BOOKING-' . $booking->id,
+                'gross_amount' => (int)$booking->final_price,
+            ],
+            'customer_details' => [
+                'first_name' => Auth::user()->name,
+                'email' => Auth::user()->email ?? 'guest@example.com',
+                'phone' => Auth::user()->phone ?? '08123456789',
+            ],
+            'callbacks' => [
+                'finish' => route('booking.riwayat'),
+            ]
+        ];
+
+        $snapToken = Snap::getSnapToken($params);
+
+        return view('pages.booking.snap', compact('snapToken'));
+    }
 
     return redirect()->route('booking.riwayat')->with('success', 'Booking berhasil ditambahkan.');
 }
