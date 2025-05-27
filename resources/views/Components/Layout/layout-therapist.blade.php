@@ -108,8 +108,9 @@
                         class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 bg-white hover:text-gray-700 focus:outline-none transition ease-in-out duration-150">
 
                         {{-- Foto Profil --}}
-                        <img src="{{ Auth::user()->photo }}" alt="{{ Auth::user()->name }}"
+                        <img src="{{ asset('storage/' . Auth::user()->photo) }}" alt="{{ Auth::user()->name }}"
                             class="h-8 w-8 rounded-full object-cover mr-2">
+
 
                         {{-- Nama --}}
                         <div>{{ Auth::user()->name }}</div>

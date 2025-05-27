@@ -4,6 +4,7 @@ use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Auth; 
 use Illuminate\Support\Facades\Route;
 use App\Http\Middleware\BlockAdminFromPublic;
+use App\Http\Middleware\BlockTherapistFromPublic;
 use App\Models\TreatmentCategory;
 use App\Http\Controllers\TreatmentManajemenController;
 use App\Http\Controllers\TreatmentCategoryController;
@@ -54,14 +55,14 @@ Route::middleware(['auth', 'verified', 'customer'])->group(function () {
 
 //r Rute Therapist
 
-Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('/dashboard-therapist', function () {
-        if (Auth::user()->role !== 'therapist') {
-            abort(403);
-        }
-        return view('pages.therapist.dashboard');
-    });
+Route::middleware(['auth', 'verified', 'therapist'])->group(function () {
+    Route::get('/dashboard-therapist', [TherapistController::class, 'dashboardTherapist'])->name('therapist.dashboard');
+    Route::get('/jadwal-hari-ini', [TherapistController::class, 'scheduleToday'])->name('therapist.schedule.today');
+    Route::get('/jadwal-minggu-ini', [TherapistController::class, 'scheduleWeek'])->name('therapist.schedule.week');
+    Route::get('/jadwal-bulan-ini', [TherapistController::class, 'scheduleMonth'])->name('therapist.schedule.month');
 });
+
+
 
 // Rute Admin
 Route::middleware(['auth', 'verified', 'admin'])->group(function () {
@@ -106,7 +107,7 @@ Route::middleware(['auth', 'verified', 'admin'])->group(function () {
 });
 
 
-Route::middleware(BlockAdminFromPublic::class)->group(function () {
+Route::middleware([BlockAdminFromPublic::class, BlockTherapistFromPublic::class])->group(function () {
     Route::get('/', [TreatmentCategoryController::class, 'index']);
     Route::get('/kategori/facetreatment', [TreatmentCategoryController::class, 'faceTreatmentPage']);
     Route::get('/kategori/bodytreatment', [TreatmentCategoryController::class, 'bodyTreatmentPage']);

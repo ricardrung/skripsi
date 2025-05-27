@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\User;
+use App\Models\Booking;
+use Illuminate\Support\Facades\Auth;
 
 class TherapistController extends Controller
 {
@@ -103,6 +105,46 @@ public function update(Request $request, $id)
 }
 
     return redirect()->route('therapist.index')->with('success', 'Therapist berhasil diperbarui.');
+}
+
+public function dashboardTherapist()
+{
+    $therapistId = Auth::id();
+
+    $todayBookings = Booking::with('treatment', 'user')
+        ->where('therapist_id', $therapistId)
+        ->whereDate('booking_date', now())
+        ->orderBy('booking_time')
+        ->get();
+
+    $weeklyCount = Booking::where('therapist_id', $therapistId)
+        ->whereBetween('booking_date', [now()->startOfWeek(), now()->endOfWeek()])
+        ->count();
+
+    $monthlyCount = Booking::where('therapist_id', $therapistId)
+        ->whereMonth('booking_date', now()->month)
+        ->count();
+
+    $status = Auth::user()->availability ?? 'Tersedia';
+
+  
+
+    $last7Days = now()->subDays(6)->startOfDay();
+    $chartData = [];
+    $chartLabels = [];
+
+    for ($i = 0; $i < 7; $i++) {
+        $date = $last7Days->copy()->addDays($i);
+        $count = Booking::where('therapist_id', $therapistId)
+            ->whereDate('booking_date', $date)
+            ->count();
+
+        $chartLabels[] = $date->format('D');
+        $chartData[] = $count;
+}
+
+
+    return view('pages.therapist.dashboard', compact('todayBookings', 'weeklyCount', 'monthlyCount', 'status', 'chartLabels', 'chartData'));
 }
 
 
