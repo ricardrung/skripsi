@@ -16,6 +16,12 @@
                 <option value="selesai" {{ request('status') == 'selesai' ? 'selected' : '' }}>Selesai</option>
                 <option value="batal" {{ request('status') == 'batal' ? 'selected' : '' }}>Dibatalkan</option>
             </select>
+            <select name="order" class="p-2 border rounded bg-white w-full sm:w-48">
+                <option value="">Urutkan</option>
+                <option value="id_desc" {{ request('order') == 'id_desc' ? 'selected' : '' }}>ID Terbaru</option>
+                <option value="id_asc" {{ request('order') == 'id_asc' ? 'selected' : '' }}>ID Terlama</option>
+            </select>
+
 
             <input type="date" name="start_date" value="{{ request('start_date') }}"
                 class="p-2 border rounded w-full sm:w-44">
@@ -41,6 +47,7 @@
                     <thead class="bg-yellow-500 text-white whitespace-nowrap">
                         <tr>
                             <th class="py-3 px-4 text-left">No</th>
+                            <th class="py-3 px-4 text-left">Booking ID</th>
                             <th class="py-3 px-4 text-left">Pelanggan</th>
                             <th class="py-3 px-4 text-left">Kontak</th>
                             <th class="py-3 px-4 text-left">Layanan</th>
@@ -62,6 +69,7 @@
                                 <td class="py-3 px-4">
                                     {{ ($bookings->currentPage() - 1) * $bookings->perPage() + $index + 1 }}
                                 </td>
+                                <td class="py-3 px-4">#{{ $booking->id }}</td>
                                 <td class="py-3 px-4">{{ $booking->user->name ?? ($booking->guest_name ?? '-') }}</td>
                                 <td class="py-3 px-4">{{ $booking->user->phone ?? ($booking->guest_phone ?? '-') }}</td>
                                 <td class="py-3 px-4">{{ $booking->treatment->name }}</td>

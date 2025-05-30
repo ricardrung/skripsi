@@ -26,6 +26,7 @@ class Booking extends Model
         'payment_status',
         'status',
         'note',
+        'room_type',
         'cancellation_reason',
         'canceled_at',
     ];

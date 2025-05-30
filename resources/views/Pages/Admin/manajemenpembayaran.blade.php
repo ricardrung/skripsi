@@ -17,6 +17,18 @@
                 </option>
             </select>
 
+            <select name="therapist_id" class="p-2 border rounded bg-white w-full sm:w-48 text-sm">
+                <option value="">Semua Therapist</option>
+                @foreach ($therapists as $therapist)
+                    <option value="{{ $therapist->id }}" {{ request('therapist_id') == $therapist->id ? 'selected' : '' }}>
+                        {{ $therapist->name }}
+                    </option>
+                @endforeach
+            </select>
+
+            <input type="date" name="start_date" class="p-2 border rounded text-sm" value="{{ request('start_date') }}">
+            <input type="date" name="end_date" class="p-2 border rounded text-sm" value="{{ request('end_date') }}">
+
             <button type="submit"
                 class="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600 w-full sm:w-auto text-sm">
                 Filter
@@ -27,10 +39,15 @@
                 Reset
             </a>
         </form>
+        {{-- download --}}
         <form method="GET" action="{{ route('laporan.pemasukan.download') }}"
             class="mb-4 flex flex-wrap gap-2 items-center">
-            <input type="date" name="start_date" class="p-2 border rounded text-sm" value="{{ request('start_date') }}">
-            <input type="date" name="end_date" class="p-2 border rounded text-sm" value="{{ request('end_date') }}">
+            <input type="hidden" name="search" value="{{ request('search') }}">
+            <input type="hidden" name="payment_status" value="{{ request('payment_status') }}">
+            <input type="hidden" name="therapist_id" value="{{ request('therapist_id') }}">
+            <input type="hidden" name="start_date" class="p-2 border rounded text-sm" value="{{ request('start_date') }}">
+            <input type="hidden" name="end_date" class="p-2 border rounded text-sm" value="{{ request('end_date') }}">
+
             <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 text-sm">
                 Download Laporan (CSV)
             </button>
@@ -47,7 +64,9 @@
                     <thead class="bg-yellow-500 text-white whitespace-nowrap">
                         <tr>
                             <th class="py-3 px-4 text-left">No</th>
-                            <th class="py-3 px-4 text-left">Nama</th>
+                            <th class="py-3 px-4 text-left">Booking ID</th>
+                            <th class="py-3 px-4 text-left">Customer</th>
+                            <th class="py-3 px-4 text-left">Therapist</th>
                             <th class="py-3 px-4 text-left">Kontak</th>
                             <th class="py-3 px-4 text-left">Treatment</th>
                             <th class="py-3 px-4 text-left">Tanggal</th>
@@ -63,8 +82,12 @@
                                 <td class="py-3 px-4">
                                     {{ ($bookings->currentPage() - 1) * $bookings->perPage() + $index + 1 }}
                                 </td>
+                                <td class="py-3 px-4">#{{ $booking->id }}</td>
                                 <td class="py-3 px-4">
                                     {{ $booking->user->name ?? ($booking->guest_name ?? '-') }}
+                                </td>
+                                <td class="py-3 px-4">
+                                    {{ $booking->therapist->name ?? '-' }}
                                 </td>
                                 <td class="py-3 px-4">
                                     {{ $booking->user->phone ?? ($booking->guest_phone ?? '-') }}

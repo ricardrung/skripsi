@@ -76,7 +76,7 @@
                                 <td class="py-3 px-4">{{ $therapist->bookings_count ?? 0 }}</td>
                                 <td class="py-3 px-4">
                                     @if ($therapist->photo)
-                                        <img src="{{ asset('storage/' . $therapist->photo) }}" alt="Foto"
+                                        <img src="{{ asset('storage/' . $therapist->photo) }}" alt="foto"
                                             class="w-10 h-10 rounded-full object-cover">
                                     @else
                                         <span class="text-gray-400 italic">-</span>

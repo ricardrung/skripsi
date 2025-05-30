@@ -114,15 +114,33 @@
                                 @endif
                             </div>
                         </div>
-
+                        <p><strong>Booking ID:</strong> #{{ $booking->id }}</p>
                         <p><strong>Tanggal:</strong> {{ \Carbon\Carbon::parse($booking->booking_date)->format('d M Y') }}
                         </p>
                         <p><strong>Jam:</strong> {{ \Carbon\Carbon::parse($booking->booking_time)->format('H:i') }}</p>
                         <p><strong>Harga:</strong> Rp {{ number_format($booking->final_price, 0, ',', '.') }}</p>
                         <p><strong>Therapist:</strong> {{ $booking->therapist->name ?? '-' }}</p>
                         <p><strong>Durasi:</strong> {{ $booking->treatment->duration_minutes ?? '-' }} menit</p>
+                        <p><strong>Status Bayar:</strong>
+                            @if ($booking->payment_status === 'sudah_bayar')
+                                <span class="text-green-600 font-semibold">Lunas</span>
+                            @else
+                                <span class="text-red-600 font-semibold">Belum Bayar</span>
+                            @endif
+                        </p>
                         <p><strong>Dipesan Pada:</strong>
                             {{ \Carbon\Carbon::parse($booking->created_at)->format('d M Y H:i') }}</p>
+
+                        @if ($booking->payment_status === 'belum_bayar' && $booking->status !== 'batal')
+                            <p><strong>Belum Bayar ? :</strong>
+                                <a href="{{ route('booking.payAgain', $booking->id) }}"
+                                    class="text-blue-500 btn btn-primary">
+                                    Bayar Sekarang
+                                </a>
+                            </p>
+                        @endif
+
+
 
                         <div class="flex flex-wrap gap-2 mt-4">
                             <button onclick="openDetailModal({{ $booking->id }})"

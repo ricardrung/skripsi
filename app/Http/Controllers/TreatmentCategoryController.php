@@ -17,11 +17,13 @@ class TreatmentCategoryController extends Controller
         $query->where('slug', 'facetreatment');
     })->get();
 
+    $allTreatments = Treatment::where('is_available', true)->get();
+
     $therapists = User::where('role', 'therapist')
         ->where('availability', 'tersedia')
         ->get();
 
-    return view('pages.kategori.facetreatment', compact('treatments', 'therapists'));
+    return view('pages.kategori.facetreatment', compact('treatments', 'therapists', 'allTreatments'));
 }
 
 public function bodyTreatmentPage()
@@ -30,11 +32,13 @@ public function bodyTreatmentPage()
         $query->where('slug', 'bodytreatment');
     })->get();
 
+    $allTreatments = Treatment::where('is_available', true)->get();
+
     $therapists = User::where('role', 'therapist')
         ->where('availability', 'tersedia')
         ->get();
 
-    return view('pages.kategori.bodytreatment', compact('treatments', 'therapists'));
+    return view('pages.kategori.bodytreatment', compact('treatments', 'therapists', 'allTreatments'));
 }
 
 public function hairTreatmentPage()
@@ -43,11 +47,13 @@ public function hairTreatmentPage()
         $query->where('slug', 'hairtreatment');
     })->get();
 
+    $allTreatments = Treatment::where('is_available', true)->get();
+
     $therapists = User::where('role', 'therapist')
         ->where('availability', 'tersedia')
         ->get();
 
-    return view('pages.kategori.hairtreatment', compact('treatments', 'therapists'));
+    return view('pages.kategori.hairtreatment', compact('treatments', 'therapists', 'allTreatments'));
 }
 
 public function reflexologyTreatmentPage()
@@ -56,11 +62,13 @@ public function reflexologyTreatmentPage()
         $query->where('slug', 'reflexology');
     })->get();
 
+    $allTreatments = Treatment::where('is_available', true)->get();
+
     $therapists = User::where('role', 'therapist')
         ->where('availability', 'tersedia')
         ->get();
 
-    return view('pages.kategori.reflexology', compact('treatments', 'therapists'));
+    return view('pages.kategori.reflexology', compact('treatments', 'therapists', 'allTreatments'));
 }
 
 public function packagesTreatmentPage()
@@ -69,11 +77,13 @@ public function packagesTreatmentPage()
         $query->where('slug', 'treatmentpackages');
     })->get();
 
+    $allTreatments = Treatment::where('is_available', true)->get();
+
     $therapists = User::where('role', 'therapist')
         ->where('availability', 'tersedia')
         ->get();
 
-    return view('pages.kategori.treatmentpackages', compact('treatments', 'therapists'));
+    return view('pages.kategori.treatmentpackages', compact('treatments', 'therapists', 'allTreatments'));
 }
 
 public function alacarteTreatmentPage()
@@ -81,12 +91,13 @@ public function alacarteTreatmentPage()
     $treatments = Treatment::whereHas('category', function ($query) {
         $query->where('slug', 'alacarte');
     })->get();
+    $allTreatments = Treatment::where('is_available', true)->get();
 
     $therapists = User::where('role', 'therapist')
         ->where('availability', 'tersedia')
         ->get();
 
-    return view('pages.kategori.alacarte', compact('treatments', 'therapists'));
+    return view('pages.kategori.alacarte', compact('treatments', 'therapists', 'allTreatments'));
 }
 
 public function promoTreatmentPage()
@@ -96,6 +107,8 @@ public function promoTreatmentPage()
     $jumlahTransaksi = Booking::where('user_id', $userId)
         ->where('status', 'selesai')
         ->count();
+
+    $allTreatments = Treatment::where('is_available', true)->get();
 
     $claimedPromoCount = Booking::where('user_id', $userId)
         ->where('is_promo_reward', true)
@@ -111,7 +124,7 @@ public function promoTreatmentPage()
         'treatments',
         'therapists',
         'jumlahTransaksi',
-        'claimedPromoCount'
+        'claimedPromoCount', 'allTreatments'
     ));
 }
 
@@ -124,8 +137,12 @@ public function index()
             ->limit(3)
             ->get();
 
-        return view('pages.home.home', compact('bestSellingTreatments'));
+        $therapists = User::where('role', 'therapist')->get(); // ambil t
+
+        return view('pages.home.home', compact('bestSellingTreatments', 'therapists'));
     }
+
+
 
 
 }

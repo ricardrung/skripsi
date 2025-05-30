@@ -9,7 +9,7 @@ class LaporanController extends Controller
     //
     public function downloadCsv(Request $request)
 {
-    $query = Booking::with(['user', 'treatment'])
+    $query = Booking::with(['user', 'treatment', 'therapist'])
         ->where('payment_status', 'sudah_bayar');
 
     if ($request->filled('start_date')) {
@@ -18,6 +18,10 @@ class LaporanController extends Controller
 
     if ($request->filled('end_date')) {
         $query->whereDate('booking_date', '<=', $request->end_date);
+    }
+
+    if ($request->filled('therapist_id')) {
+        $query->where('therapist_id', $request->therapist_id);
     }
 
     $bookings = $query->get();
@@ -33,12 +37,13 @@ class LaporanController extends Controller
         $handle = fopen('php://output', 'w');
 
         // Header kolom
-        fputcsv($handle, ['Tanggal', 'Nama', 'Treatment', 'Harga', 'Metode']);
+        fputcsv($handle, ['Tanggal', 'Nama','Therapist', 'Treatment', 'Harga', 'Metode']);
 
         foreach ($bookings as $b) {
             fputcsv($handle, [
                 $b->booking_date,
                 $b->user->name ?? $b->guest_name,
+                $b->therapist->name ?? '-',
                 $b->treatment->name ?? '-',
                 $b->final_price,
                 ucfirst($b->payment_method ?? '-'),

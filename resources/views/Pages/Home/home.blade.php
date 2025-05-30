@@ -55,84 +55,17 @@
             <div class="mt-12">
                 <h3 class="text-2xl font-bold mb-6 text-[#2c1a0f]">Our Team</h3>
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-8">
-                    @php
-                        $teamMembers = [
-                            [
-                                'name' => 'Pimpinan',
-                                'image' => '/images/contoh.png',
-                            ],
-                            [
-                                'name' => 'Kasir / Admin',
-                                'image' => '/images/contoh.png',
-                            ],
-                            [
-                                'name' => 'Therapist 1',
-                                'image' => '/images/contoh.png',
-                            ],
-                            [
-                                'name' => 'Therapist 2',
-                                'image' => '/images/contoh.png',
-                            ],
-                            [
-                                'name' => 'Therapist 3',
-                                'image' => '/images/contoh.png',
-                            ],
-                            [
-                                'name' => 'Therapist 4',
-                                'image' => '/images/contoh.png',
-                            ],
-                            [
-                                'name' => 'Therapist 5',
-                                'image' => '/images/contoh.png',
-                            ],
-                            [
-                                'name' => 'Therapist 6',
-                                'image' => '/images/contoh.png',
-                            ],
-                            [
-                                'name' => 'Therapist 7',
-                                'image' => '/images/contoh.png',
-                            ],
-                            [
-                                'name' => 'Therapist 8',
-                                'image' => '/images/contoh.png',
-                            ],
-                            [
-                                'name' => 'Therapist 9',
-                                'image' => '/images/contoh.png',
-                            ],
-                            [
-                                'name' => 'Therapist 10',
-                                'image' => '/images/contoh.png',
-                            ],
-                            [
-                                'name' => 'Therapist 11',
-                                'image' => '/images/contoh.png',
-                            ],
-                            [
-                                'name' => 'Therapist 12',
-                                'image' => '/images/contoh.png',
-                            ],
-                            [
-                                'name' => 'Therapist 13',
-                                'image' => '/images/contoh.png',
-                            ],
-                            [
-                                'name' => 'Therapist 14',
-                                'image' => '/images/contoh.png',
-                            ],
-                        ];
-                    @endphp
-                    @foreach ($teamMembers as $member)
+                    @foreach ($therapists as $therapist)
                         <div class="text-center">
-                            <img src="{{ $member['image'] }}" alt="{{ $member['name'] }}"
+                            <img src="{{ asset('storage/' . $therapist->photo) }}" alt="{{ $therapist->name }}"
                                 class="w-40 h-40 object-cover rounded-full mx-auto">
-                            <h4 class="mt-4 text-xl font-semibold">{{ $member['name'] }}</h4>
+                            <h4 class="mt-4 text-xl font-semibold">{{ $therapist->name }}</h4>
                         </div>
                     @endforeach
-
                 </div>
             </div>
+
+
     </section>
 
     <!-- Peta Lokasi -->

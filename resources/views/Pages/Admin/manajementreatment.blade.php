@@ -147,12 +147,15 @@
                         <option value="90">90 Menit</option>
                         <option value="150">150 Menit</option>
                     </select>
-                    <select name="room_type" class="border rounded p-2 w-full mb-2" required>
-                        <option value="">-- Pilih Tipe Ruangan --</option>
-                        @foreach ($roomTypes as $type)
-                            <option value="{{ $type }}">{{ ucfirst($type) }}</option>
-                        @endforeach
+                    <!-- Pilih Tipe Ruangan Treatment -->
+
+                    <select name="room_type" id="room_type" class="w-full p-2 border rounded mb-2" required>
+                        <option value="">-- Pilih Tipe --</option>
+                        <option value="single">Single</option>
+                        <option value="double">Double</option>
+                        <option value="both">Bisa Single & Double</option>
                     </select>
+
 
                     <textarea name="description" placeholder="Deskripsi" class="border rounded p-2 w-full mb-2"></textarea>
                     <input type="url" name="demo_video_url" placeholder="Link Video Demo"

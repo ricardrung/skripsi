@@ -77,7 +77,7 @@ public function update(Request $request, $id)
         'is_promo' => 'nullable|boolean',
         'is_best_selling' => 'nullable|boolean',
         'is_available' => 'nullable|boolean',
-        'room_type' => 'required|string',
+        'room_type' => 'required|in:single,double,both',
     ]);
 
     $validated['is_promo'] = $request->input('is_promo') == '1';
@@ -105,7 +105,7 @@ public function update(Request $request, $id)
         'category_id' => 'required|exists:treatment_categories,id',
         'is_best_selling' => 'nullable|boolean',
         'is_available' => 'nullable|boolean',
-        'room_type' => 'required|string',
+        'room_type' => 'required|in:single,double,both',
     ]);
 
     // Ubah nilai checkbox promo jadi default false jika tidak diceklis

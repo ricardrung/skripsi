@@ -48,9 +48,12 @@ Route::middleware(['auth', 'verified', 'customer'])->group(function () {
     Route::get('/dashboard', [TreatmentCategoryController::class, 'index'])->name('dashboard');
     Route::post('/booking/customer', [BookingController::class, 'storeCustomer'])->name('booking.store.customer');
     Route::get('/api/available-therapists', [BookingController::class, 'getAvailableTherapists']);
+    Route::get('/api/available-therapists-second', [BookingController::class, 'getAvailableTherapistsForSecondTreatment']);
     Route::get('/riwayatbooking', [BookingController::class, 'riwayatCustomer'])->name('booking.riwayat');
     Route::delete('/riwayatbooking/{id}', [BookingController::class, 'cancelBookingCustomer'])->name('booking.cancel.customer');
     Route::get('/promo', [TreatmentCategoryController::class, 'promoTreatmentPage']);
+    Route::get('/booking/pay-again/{id}', [BookingController::class, 'payAgain'])->name('booking.payAgain');
+
 });
 
 //r Rute Therapist
