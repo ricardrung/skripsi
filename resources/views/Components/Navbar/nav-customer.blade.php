@@ -56,8 +56,9 @@
                                 class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 bg-white hover:text-gray-700 focus:outline-none transition ease-in-out duration-150">
 
                                 {{-- Foto Profil --}}
-                                <img src="{{ Auth::user()->photo }}" alt="{{ Auth::user()->name }}"
+                                <img src="{{ asset('storage/' . Auth::user()->photo) }}" alt="{{ Auth::user()->name }}"
                                     class="h-8 w-8 rounded-full object-cover mr-2">
+
                                 <div>{{ Auth::user()->name }}</div>
 
                                 <div class="ms-1">
@@ -115,6 +116,9 @@
                     <!-- Responsive Settings Options -->
                     <div class="pt-4 pb-1 border-t border-gray-200">
                         <div class="px-4">
+                            <img src="{{ asset('storage/' . Auth::user()->photo) }}" alt="{{ Auth::user()->name }}"
+                                class="h-8 w-8 rounded-full object-cover mr-2">
+
                             <div class="font-medium text-base text-gray-800">{{ Auth::user()->name }}</div>
                             <div class="font-medium text-sm text-gray-500">{{ Auth::user()->email }}</div>
                         </div>
@@ -187,8 +191,9 @@
             <!-- Settings Dropdown -->
             <div class="flex flex-col px-4 py-2 space-y-2 border-t border-gray-600 text-sm">
                 {{-- Foto Profil --}}
-                <img src="{{ Auth::user()->photo }}" alt="{{ Auth::user()->name }}"
+                <img src="{{ asset('storage/' . Auth::user()->photo) }}" alt="{{ Auth::user()->name }}"
                     class="h-8 w-8 rounded-full object-cover mr-2">
+
                 <div class="text-white font-semibold">{{ Auth::user()->name }}</div>
                 <div class="text-gray-300">{{ Auth::user()->email }}</div>
 

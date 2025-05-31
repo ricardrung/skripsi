@@ -19,11 +19,35 @@
                 </div>
             </div>
 
-            <div class="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
+            {{-- <div class="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
                 <div class="max-w-xl">
                     @include('profile.partials.delete-user-form')
                 </div>
-            </div>
+            </div> --}}
         </div>
     </div>
+
+    @if (session('status') === 'profile-updated')
+        <script>
+            Swal.fire({
+                icon: 'success',
+                title: 'Profil Diperbarui',
+                text: 'Informasi profil berhasil disimpan.',
+                timer: 3000,
+                showConfirmButton: false
+            });
+        </script>
+    @endif
+    @if (session('status') === 'password-updated')
+        <script>
+            Swal.fire({
+                icon: 'success',
+                title: 'Password Diperbarui',
+                text: 'Password berhasil diperbarui.',
+                timer: 3000,
+                showConfirmButton: false
+            });
+        </script>
+    @endif
+
 </x-app-layout>

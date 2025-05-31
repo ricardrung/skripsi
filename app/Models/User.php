@@ -61,4 +61,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(\App\Models\Booking::class, 'user_id');
     }
+
+    public function isAdmin()
+{
+    return $this->role === 'admin'; // sesuaikan jika kolom kamu bukan 'role'
+}
 }
