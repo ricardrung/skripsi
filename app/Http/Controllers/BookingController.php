@@ -19,7 +19,7 @@ class BookingController extends Controller
 public function index(Request $request)
 {
     $query = Booking::with(['treatment.category', 'therapist', 'user', 'creator']);
-    
+    $creators = User::select('id', 'name')->get();
 
     // 🔍 Filter berdasarkan nama layanan (search)
     if ($request->filled('search')) {
@@ -48,13 +48,17 @@ public function index(Request $request)
         $query->orderByDesc('id');
     }
 
+    if ($request->filled('creator_id')) {
+    $query->where('created_by', $request->creator_id); // ganti 'created_by' jika nama kolomnya berbeda
+}
+
 
     $bookings = $query->orderBy('booking_date', 'desc')->paginate(10);
 
     // Kalau butuh kategori untuk dropdown kategori (meskipun tidak terlihat di Blade kamu sekarang)
     $categories = \App\Models\TreatmentCategory::pluck('name', 'id');
 
-    return view('pages.admin.manajemenbooking', compact('bookings', 'categories'));
+    return view('pages.admin.manajemenbooking', compact('bookings', 'categories', 'creators'));
 }
 
 
@@ -323,12 +327,13 @@ DB::commit();
 
      //payment gateway 
         // Payment Gateway Logic (support single & double room)
-$bookings = Booking::where('user_id', Auth::id())
-    ->where('booking_date', $request->booking_date)
-    ->where('booking_time', $request->booking_time)
-    ->orderBy('id', 'desc')
-    ->take(2) // Ambil maksimal 2 booking (jika ruangan double)
-    ->get();
+$bookings = Booking::with('treatment')
+            ->where('user_id', Auth::id())
+            ->where('booking_date', $request->booking_date)
+            ->where('booking_time', $request->booking_time)
+            ->orderBy('id', 'desc')
+            ->take(2)
+            ->get();
 
 if ($bookings->isEmpty()) {
     return back()->with('error', 'Data booking tidak ditemukan.');
@@ -340,10 +345,29 @@ $totalFinalPrice = $bookings->sum('final_price');
 $orderId = 'BOOKING-' . $bookings->first()->id;
 
 if ($request->payment_method === 'gateway') {
+
+        if ($totalFinalPrice <= 0) {
+        return redirect()->route('booking.riwayat')
+            ->with('success', 'Booking berhasil ditambahkan tanpa pembayaran.');
+    }
+
+
     Config::$serverKey = config('midtrans.serverKey');
     Config::$isProduction = config('midtrans.isProduction');
     Config::$isSanitized = config('midtrans.isSanitized');
     Config::$is3ds = config('midtrans.is3ds');
+
+    $itemDetails = [];
+            foreach ($bookings as $b) {
+                if ($b->treatment) {
+                    $itemDetails[] = [
+                        'id' => 'BOOKING-' . $b->id,
+                        'price' => (int)$b->final_price,
+                        'quantity' => 1,
+                        'name' => $b->treatment->name . ' (BOOKING-' . $b->id . ')',
+                    ];
+                }
+            }
 
     $params = [
         'transaction_details' => [
@@ -355,6 +379,7 @@ if ($request->payment_method === 'gateway') {
             'email' => Auth::user()->email ?? 'guest@example.com',
             'phone' => Auth::user()->phone ?? '08123456789',
         ],
+        'item_details' => $itemDetails,
         'callbacks' => [
             'finish' => route('booking.riwayat'),
         ]
@@ -376,18 +401,20 @@ return redirect()->route('booking.riwayat')->with('success', 'Booking berhasil d
 }
 public function payAgain($id)
 {
-    $booking = Booking::where('id', $id)
+    $booking = Booking::with('treatment')
+        ->where('id', $id)
         ->where('user_id', Auth::id())
         ->where('payment_status', 'belum_bayar')
         ->firstOrFail();
 
-    $bookings = Booking::where('user_id', Auth::id())
+    $bookings = Booking::with('treatment')
+        ->where('user_id', Auth::id())
         ->where('booking_date', $booking->booking_date)
         ->where('booking_time', $booking->booking_time)
         ->orderBy('id', 'desc')
         ->take(2)
         ->get();
-
+        
     $totalFinalPrice = $bookings->sum('final_price');
 
     \Midtrans\Config::$serverKey = config('services.midtrans.serverKey');
@@ -405,28 +432,26 @@ public function payAgain($id)
         ];
     }
 
-    if (!$booking->snap_token) {
-        $params = [
-            'transaction_details' => [
-                'order_id' => 'BOOKING-' . $booking->id,
-                'gross_amount' => (int)$totalFinalPrice,
-            ],
-            'customer_details' => [
-                'first_name' => Auth::user()->name,
-                'email' => Auth::user()->email ?? 'guest@example.com',
-                'phone' => Auth::user()->phone ?? '08123456789',
-            ],
-            'item_details' => $itemDetails, // ✅ Tampilkan di UI Snap
-            'callbacks' => [
-                'finish' => route('booking.riwayat'),
-            ]
-        ];
+    // Buat Snap Token baru dengan order_id unik (gunakan timestamp)
+    $params = [
+        'transaction_details' => [
+            'order_id' => 'BOOKING-' . $booking->id . '-' . now()->timestamp,
+            'gross_amount' => (int)$totalFinalPrice,
+        ],
+        'customer_details' => [
+            'first_name' => Auth::user()->name,
+            'email' => Auth::user()->email ?? 'guest@example.com',
+            'phone' => Auth::user()->phone ?? '08123456789',
+        ],
+        'item_details' => $itemDetails,
+        'callbacks' => [
+            'finish' => route('booking.riwayat'),
+        ]
+    ];
 
         $snapToken = Snap::getSnapToken($params);
         $booking->update(['snap_token' => $snapToken]);
-    } else {
-        $snapToken = $booking->snap_token;
-    }
+  
 
     return view('pages.Booking.snap', compact('snapToken'));
 }

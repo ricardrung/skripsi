@@ -22,6 +22,16 @@
                 <option value="id_asc" {{ request('order') == 'id_asc' ? 'selected' : '' }}>ID Terlama</option>
             </select>
 
+            <!-- Filter Creator -->
+            <select name="creator_id" class="p-2 border rounded bg-white w-full sm:w-64">
+                <option value="">Semua Creator</option>
+                @foreach ($creators as $creator)
+                    <option value="{{ $creator->id }}" {{ request('creator_id') == $creator->id ? 'selected' : '' }}>
+                        {{ $creator->name }}
+                    </option>
+                @endforeach
+            </select>
+
 
             <input type="date" name="start_date" value="{{ request('start_date') }}"
                 class="p-2 border rounded w-full sm:w-44">
