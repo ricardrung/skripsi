@@ -9,7 +9,7 @@ class Booking extends Model
 {
     //
     protected $fillable = [
-       'user_id',
+        'user_id',
         'guest_name',
         'guest_phone',
         'treatment_id',
@@ -29,6 +29,7 @@ class Booking extends Model
         'room_type',
         'cancellation_reason',
         'canceled_at',
+        'snap_token',
     ];
 
          // Relasi

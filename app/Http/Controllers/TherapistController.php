@@ -56,6 +56,8 @@ public function store(Request $request)
         'photo' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
     ]);
 
+
+
     $photoPath = null;
     if ($request->hasFile('photo')) {
         $photoPath = $request->file('photo')->store('photos', 'public');

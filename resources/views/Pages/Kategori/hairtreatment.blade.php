@@ -154,6 +154,18 @@
                                     </div>
 
 
+                                    {{-- Room Typw --}}
+                                    <div>
+                                        <label for="room_type" class="block font-semibold">Pilih Tipe Ruangan:</label>
+                                        <select id="room_type" name="room_type" class="w-full p-2 border rounded" required>
+                                            <option value="">-- Pilih Tipe Ruangan --</option>
+                                            <option value="single">Single</option>
+                                            <option value="double">Double</option>
+                                        </select>
+                                    </div>
+
+
+
                                     <!-- Pemilihan Therapist -->
                                     <div>
                                         <label for="therapist_id" class="block font-semibold">Pilih Therapist

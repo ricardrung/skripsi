@@ -27,6 +27,7 @@
         @endif
 
 
+
         {{-- Pencarian --}}
 
 
@@ -37,6 +38,7 @@
             <select name="status" class="p-2 pr-8 border rounded appearance-none bg-white">
                 <option value="">Semua Status</option>
                 <option value="menunggu" {{ request('status') == 'menunggu' ? 'selected' : '' }}>Menunggu</option>
+                <option value="sedang" {{ request('status') == 'sedang' ? 'selected' : '' }}>Sedang</option>
                 <option value="selesai" {{ request('status') == 'selesai' ? 'selected' : '' }}>Selesai</option>
                 <option value="batal" {{ request('status') == 'batal' ? 'selected' : '' }}>Batal</option>
             </select>
@@ -105,14 +107,32 @@
                             </div>
                             <div>
                                 @if ($booking->status == 'selesai')
-                                    <span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm">Selesai</span>
+                                    <div
+                                        class="flex items-start gap-2 bg-green-50 border border-green-200 text-green-800 px-3 py-2 rounded-md text-sm mt-2">
+                                        <i class="fas fa-check-circle mt-1 text-green-500"></i>
+                                        <div class="leading-snug">
+                                            <strong>Treatment selesai</strong><br>
+                                            Terima kasih!
+                                        </div>
+                                    </div>
                                 @elseif ($booking->status == 'menunggu')
                                     <span
                                         class="bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full text-sm">Menunggu</span>
                                 @elseif ($booking->status == 'batal')
                                     <span class="bg-red-100 text-red-700 px-3 py-1 rounded-full text-sm">Dibatalkan</span>
+                                @elseif ($booking->status == 'sedang')
+                                    <div
+                                        class="flex items-start gap-2 bg-blue-50 border border-blue-200 text-blue-800 px-3 py-2 rounded-md text-sm mt-2">
+                                        <i class="fas fa-spinner fa-spin mt-1 text-blue-500"></i>
+                                        <div class="leading-snug">
+                                            <strong>Treatment berlangsung</strong><br>
+                                        </div>
+                                    </div>
                                 @endif
+
+
                             </div>
+
                         </div>
                         <p><strong>Booking ID:</strong> #{{ $booking->id }}</p>
                         <p><strong>Tanggal:</strong> {{ \Carbon\Carbon::parse($booking->booking_date)->format('d M Y') }}
@@ -131,7 +151,10 @@
                         <p><strong>Dipesan Pada:</strong>
                             {{ \Carbon\Carbon::parse($booking->created_at)->format('d M Y H:i') }}</p>
 
-                        @if ($booking->payment_status === 'belum_bayar' && $booking->status !== 'batal')
+                        @if (
+                            $booking->payment_status === 'belum_bayar' &&
+                                $booking->status !== 'batal' &&
+                                $booking->payment_method === 'gateway')
                             <p><strong>Belum Bayar ? :</strong>
                                 <a href="{{ route('booking.payAgain', $booking->id) }}"
                                     class="text-blue-500 btn btn-primary">
@@ -139,6 +162,7 @@
                                 </a>
                             </p>
                         @endif
+
 
 
 
@@ -159,6 +183,29 @@
                                     </button>
                                 </form>
                             @endif
+                            {{-- MINIMAL CANCEL  --}}
+                            @if ($booking->status == 'menunggu')
+                                @php
+                                    $now = \Carbon\Carbon::now();
+                                    $bookingDateTime = \Carbon\Carbon::parse(
+                                        $booking->booking_date . ' ' . $booking->booking_time,
+                                    );
+                                    $bisaDibatalkan = $now->diffInMinutes($bookingDateTime, false) >= 60;
+                                @endphp
+
+                                @if ($bisaDibatalkan)
+                                    <p class="text-sm text-yellow-700 mt-2">
+                                        <i class="fas fa-info-circle"></i> Booking hanya bisa dibatalkan maksimal <strong>1
+                                            jam sebelum</strong> waktu treatment.
+                                    </p>
+                                @else
+                                    <p class="text-sm text-red-600 mt-2">
+                                        <i class="fas fa-ban"></i> Waktu pembatalan telah lewat. Anda tidak bisa membatalkan
+                                        booking ini.
+                                    </p>
+                                @endif
+                            @endif
+
                         </div>
                     </div>
                 @endforeach

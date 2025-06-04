@@ -95,7 +95,7 @@
                 <label class="block text-gray-700">Metode Pembayaran</label>
                 <select name="payment_method" class="w-full p-2 border rounded" required>
                     <option value="cash">Cash</option>
-                    <option value="gateway">Payment Gateway</option>
+
                 </select>
             </div>
 
