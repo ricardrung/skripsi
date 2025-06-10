@@ -139,7 +139,7 @@ public function index()
 
         $therapists = User::where('role', 'therapist')->get(); // ambil t
 
-        return view('pages.home.home', compact('bestSellingTreatments', 'therapists'));
+        return view('Pages.Home.home', compact('bestSellingTreatments', 'therapists'));
     }
 
 
