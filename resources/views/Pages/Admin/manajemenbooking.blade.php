@@ -6,7 +6,7 @@
 
         {{-- Filter --}}
         <form method="GET" class="mb-4 flex flex-wrap gap-2 items-center">
-            <input type="text" name="search" placeholder="Cari layanan..." value="{{ request('search') }}"
+            <input type="text" name="search" placeholder="Cari pelanggan..." value="{{ request('search') }}"
                 class="p-2 border rounded w-full sm:w-64">
 
             <select name="status" class="p-2 border rounded bg-white w-full sm:w-48">

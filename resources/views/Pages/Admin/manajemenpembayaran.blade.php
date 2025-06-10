@@ -73,6 +73,7 @@
                             <th class="py-3 px-4 text-left">Total Bayar</th>
                             <th class="py-3 px-4 text-left">Metode</th>
                             <th class="py-3 px-4 text-left">Status</th>
+                            <th class="py-3 px-4 text-left">Status Booking</th>
                             <th class="py-3 px-4 text-left">Aksi</th>
                         </tr>
                     </thead>
@@ -112,8 +113,21 @@
                                         {{ ucfirst($booking->payment_status) }}
                                     </span>
                                 </td>
+
                                 <td class="py-3 px-4">
-                                    @if ($booking->payment_status === 'belum_bayar')
+                                    <span
+                                        class="px-3 py-1 text-sm rounded-full
+                                        @if ($booking->status === 'selesai') bg-green-100 text-green-700
+                                        @elseif ($booking->status === 'menunggu') bg-yellow-100 text-yellow-700
+                                        @elseif ($booking->status === 'sedang') bg-blue-100 text-blue-700
+                                        @elseif ($booking->status === 'batal') bg-red-100 text-red-700
+                                        @else bg-gray-200 text-gray-600 @endif">
+                                        {{ ucfirst($booking->status) }}
+                                    </span>
+                                </td>
+
+                                <td class="py-3 px-4">
+                                    @if ($booking->payment_status === 'belum_bayar' && $booking->status !== 'batal')
                                         <form id="formLunas-{{ $booking->id }}"
                                             action="{{ route('booking.update.status.bayar', $booking->id) }}"
                                             method="POST">
@@ -154,6 +168,21 @@
                 });
             </script>
         @endif
+
+        @if (session('error'))
+            <script>
+                document.addEventListener("DOMContentLoaded", function() {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Gagal!',
+                        text: `{!! session('error') !!}`,
+                        confirmButtonColor: '#d33',
+                        confirmButtonText: 'OK'
+                    });
+                });
+            </script>
+        @endif
+
     </div>
     <script>
         function konfirmasiLunas(id) {

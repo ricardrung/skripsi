@@ -11,7 +11,13 @@ class SpaRoomController extends Controller
 {
     public function index(Request $request)
     {
-        $rooms = SpaRoom::latest()->paginate(10);
+        $query = SpaRoom::query();
+
+        if ($request->filled('search')) {
+            $query->where('room_name', 'like', '%' . $request->search . '%');
+        }
+        $rooms = $query->latest()->paginate(10);
+        
         return view('pages.admin.manajemenruangan', compact('rooms'));
     }
     

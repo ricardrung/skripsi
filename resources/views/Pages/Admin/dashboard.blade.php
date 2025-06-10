@@ -60,7 +60,7 @@
 
 
         <div class="mt-6 bg-white p-6 shadow-md rounded-lg">
-            <h2 class="text-lg font-semibold text-gray-700 mb-2">Therapist Berdasarkan Status</h2>
+            <h2 class="text-lg font-semibold text-gray-700 mb-2">Therapist</h2>
             <p class="text-sm font-medium text-green-700 mb-1">Tersedia ({{ $therapistList['tersedia']->count() }})</p>
             <ul class="mb-2 pl-4 text-sm text-gray-700">
                 @foreach ($therapistList['tersedia'] as $t)

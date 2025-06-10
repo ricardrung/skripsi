@@ -95,7 +95,7 @@ Route::middleware(['auth', 'verified', 'admin'])->group(function () {
     
     Route::get('/manajemen-ruangan', [SpaRoomController::class, 'index'])->name('spa_rooms.index');
     // Resource lengkap (CRUD)
-    Route::resource('spa_rooms', SpaRoomController::class)->except(['index', 'show']);
+    Route::resource('spa_rooms', SpaRoomController::class);
 
     Route::get('/manajemen-pelanggan', [CustomerController::class, 'index'])->name('customers.index');
     Route::post('/manajemen-pelanggan', [CustomerController::class, 'store'])->name('customers.store');

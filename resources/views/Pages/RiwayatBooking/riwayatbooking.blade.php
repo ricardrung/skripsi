@@ -148,6 +148,16 @@
                                 <span class="text-red-600 font-semibold">Belum Bayar</span>
                             @endif
                         </p>
+                        <p><strong>Metode Pembayaran:</strong>
+                            @if ($booking->payment_method === 'cash')
+                                Tunai
+                            @elseif ($booking->payment_method === 'gateway')
+                                Payment Gateway (Midtrans)
+                            @else
+                                -
+                            @endif
+                        </p>
+
                         <p><strong>Dipesan Pada:</strong>
                             {{ \Carbon\Carbon::parse($booking->created_at)->format('d M Y H:i') }}</p>
 

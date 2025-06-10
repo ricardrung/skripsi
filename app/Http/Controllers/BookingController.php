@@ -24,7 +24,7 @@ public function index(Request $request)
 
     // 🔍 Filter berdasarkan nama layanan (search)
     if ($request->filled('search')) {
-        $query->whereHas('treatment', function ($q) use ($request) {
+        $query->whereHas('user', function ($q) use ($request) {
             $q->where('name', 'like', '%' . $request->search . '%');
         });
     }
@@ -67,7 +67,7 @@ public function index(Request $request)
     {
         $customers = User::where('role', 'customer')->get();
         $treatments = Treatment::all();
-        $therapists = User::where('role', 'therapist')->get();
+        $therapists = User::where('role', 'therapist')->whereIn('availability', ['tersedia', 'sedang menangani'])->get();
         $allTreatments = Treatment::where('category_id', '!=', 7)->get();
 
 
@@ -105,7 +105,7 @@ public function storeCustomer(Request $request)
     $endTime = $startTime->copy()->addMinutes($treatment->duration_minutes);
 
     if (empty($request->therapist_id)) {
-        $availableTherapists = User::where('role', 'therapist')->get()->filter(function ($therapist) use ($request, $startTime, $endTime) {
+        $availableTherapists = User::where('role', 'therapist')->whereIn('availability', ['tersedia', 'sedang menangani'])->get()->filter(function ($therapist) use ($request, $startTime, $endTime) {
             return !Booking::where('therapist_id', $therapist->id)
                 ->where('booking_date', $request->booking_date)
                 ->where('status', '!=', 'batal')
@@ -274,7 +274,7 @@ $createdBookingIds = [];
         $endTime = $startTime->copy()->addMinutes($treatment2->duration_minutes);
 
         // Cari therapist yang tidak sama dengan therapist pertama
-        $availableSecondTherapists = User::where('role', 'therapist')
+        $availableSecondTherapists = User::where('role', 'therapist')->whereIn('availability', ['tersedia', 'sedang menangani'])
             ->where('id', '!=', $request->therapist_id) // exclude therapist pertama
             ->get()
             ->filter(function ($therapist) use ($request, $startTime, $endTime) {
@@ -533,7 +533,7 @@ public function storeAdmin(Request $request)
 
     // ✅ Auto pilih therapist jika tidak diisi
     if (empty($request->therapist_id)) {
-        $availableTherapists = User::where('role', 'therapist')->get()->filter(function ($therapist) use ($request, $startTime, $endTime) {
+        $availableTherapists = User::where('role', 'therapist')->whereIn('availability', ['tersedia', 'sedang menangani'])->get()->filter(function ($therapist) use ($request, $startTime, $endTime) {
             return !Booking::where('therapist_id', $therapist->id)
                 ->where('booking_date', $request->booking_date)
                 ->where('status', '!=', 'batal')
@@ -633,7 +633,7 @@ public function storeAdmin(Request $request)
             }
 
             if (empty($secondTherapistId)) {
-                $availableTherapists = User::where('role', 'therapist')
+                $availableTherapists = User::where('role', 'therapist')->whereIn('availability', ['tersedia', 'sedang menangani'])
                     ->where('id', '!=', $request->therapist_id)
                     ->get()
                     ->filter(function ($therapist) use ($request, $startTime, $endTime) {
@@ -706,7 +706,7 @@ public function getAvailableTherapists(Request $request)
     $endTime = $startTime->copy()->addMinutes($treatment->duration_minutes);
 
     // Filter therapist yang tidak bentrok di waktu tersebut
-    $therapists = User::where('role', 'therapist')->get()->filter(function ($therapist) use ($tanggal, $startTime, $endTime) {
+    $therapists = User::where('role', 'therapist')->whereIn('availability', ['tersedia', 'sedang menangani'])->get()->filter(function ($therapist) use ($tanggal, $startTime, $endTime) {
         return !Booking::where('therapist_id', $therapist->id)
             ->where('booking_date', $tanggal)
             ->where('status', '!=', 'batal')
@@ -832,6 +832,10 @@ public function markAsPaid($id)
 {
     $booking = Booking::findOrFail($id);
 
+    if ($booking->status === 'batal') {
+        return back()->with('error', 'Tidak bisa menandai lunas karena booking sudah dibatalkan.');
+    }
+
     $booking->update(['payment_status' => 'sudah_bayar']);
 
     return back()->with('success', 'Status pembayaran ditandai sebagai lunas.');
@@ -872,6 +876,11 @@ public function manajemenPembayaran(Request $request)
 public function updateStatusBayar($id)
 {
     $booking = Booking::findOrFail($id);
+
+    if ($booking->status === 'batal') {
+        return back()->with('error', 'Tidak bisa memperbarui status pembayaran karena booking sudah dibatalkan.');
+    }
+    
     $booking->payment_status = 'sudah_bayar';
     $booking->save();
 
@@ -898,7 +907,7 @@ public function getAvailableTherapistsForSecondTreatment(Request $request)
     $endTime = $startTime->copy()->addMinutes($treatment->duration_minutes);
 
     // Filter therapist yang tidak bentrok di waktu treatment kedua
-    $therapists = User::where('role', 'therapist')->get()->filter(function ($therapist) use ($tanggal, $startTime, $endTime, $firstTherapistId) {
+    $therapists = User::where('role', 'therapist')->whereIn('availability', ['tersedia', 'sedang menangani'])->get()->filter(function ($therapist) use ($tanggal, $startTime, $endTime, $firstTherapistId) {
         if ($firstTherapistId && $therapist->id == $firstTherapistId) {
             // exclude therapist pertama
             return false;

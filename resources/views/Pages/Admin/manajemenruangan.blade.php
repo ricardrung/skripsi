@@ -9,6 +9,12 @@
                 Ruangan</button>
         </div>
 
+        <form method="GET" action="{{ route('spa_rooms.index') }}" class="mb-4 flex flex-wrap gap-2 items-center">
+            <input type="text" name="search" placeholder="Cari nama ruangan..." value="{{ request('search') }}"
+                class="p-2 border rounded w-full md:w-64">
+            <button type="submit" class="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600">Filter</button>
+        </form>
+
         @if ($rooms->isEmpty())
             <p class="text-center text-gray-500">Belum ada data ruangan.</p>
         @else

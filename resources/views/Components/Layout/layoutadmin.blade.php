@@ -63,8 +63,7 @@
             </li> --}}
             <li>
                 <a href="/manajemen-pembayaran" class="p-6 hover:bg-[#3a2416] flex items-center space-x-3 block">
-                    <i class="fas fa-credit-card"></i> <span class="sidebar-text">Manajemen Pembayaran & Status
-                        Booking</span>
+                    <i class="fas fa-credit-card"></i> <span class="sidebar-text">Manajemen Pembayaran</span>
                 </a>
             </li>
             <li>

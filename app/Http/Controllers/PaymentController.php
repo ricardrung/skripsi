@@ -8,23 +8,30 @@ use App\Models\Booking;
 class PaymentController extends Controller
 {
     //
-     public function handleCallback(Request $request)
+    public function handleCallback(Request $request)
     {
         $payload = json_decode($request->getContent());
-        $orderId = explode('-', $payload->order_id)[1] ?? null;
+        $orderId = $payload->order_id;
 
-        $booking = Booking::find($orderId);
+        $bookingIds = collect(explode('-', $orderId))
+            ->filter(fn($part) => is_numeric($part)) // hanya ambil ID angka
+            ->values();
 
-        if (!$booking) {
+        $bookings = Booking::whereIn('id', $bookingIds)->get();
+
+        if ($bookings->isEmpty()) {
             return response()->json(['message' => 'Booking not found'], 404);
         }
 
-        if (in_array($payload->transaction_status, ['settlement', 'capture'])) {
-            $booking->update([
-                'payment_status' => 'sudah_bayar',
-                'payment_method' => 'gateway',
-            ]);
+        foreach ($bookings as $booking) {
+            if (in_array($payload->transaction_status, ['settlement', 'capture'])) {
+                $booking->update([
+                    'payment_status' => 'sudah_bayar',
+                    'payment_method' => 'gateway',
+                ]);
+            }
         }
+
 
         return response()->json(['message' => 'Callback handled']);
     }

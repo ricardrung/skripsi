@@ -41,7 +41,7 @@ public function store(Request $request)
         'phone'    => 'nullable|string|max:20',
         'password' => 'required|string|min:6',
         'birthdate' => 'nullable|date',
-        'gender' => $request->gender,
+        'gender' => 'required|in:male,female',
     ]);
 
     User::create([

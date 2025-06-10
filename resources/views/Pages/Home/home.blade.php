@@ -29,15 +29,18 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8 text-left">
                 <div class="bg-gray-100 p-6 rounded-lg shadow-md">
                     <h3 class="text-2xl text-center font-semibold text-[#2c1a0f]">Visi</h3>
-                    <p class="text-gray-700 mt-2">Menjadi spa terbaik dengan layanan berkualitas yang mengutamakan
-                        kesehatan dan kenyamanan pelanggan.</p>
+                    <p class="text-gray-700 mt-2">“Menjadi spa tradisional terbaik di Sulawesi Utara yang mengutamakan
+                        pelayanan berkualitas dan kesehatan alami melalui sentuhan rempah-rempah nusantara.”</p>
                 </div>
                 <div class="bg-gray-100 p-6 rounded-lg shadow-md">
                     <h3 class="text-2xl text-center font-semibold text-[#2c1a0f]">Misi</h3>
                     <ul class="list-disc pl-6 mt-2 text-gray-700">
-                        <li>Menggunakan bahan alami untuk setiap perawatan.</li>
-                        <li>Memberikan layanan profesional dengan therapist berpengalaman.</li>
-                        <li>Mengutamakan kenyamanan dan kepuasan pelanggan.</li>
+                        <li>Memberikan layanan spa dan relaksasi yang berkualitas tinggi dengan menggunakan bahan-bahan
+                            alami khas Indonesia.</li>
+                        <li>Menciptakan suasana yang nyaman dan menenangkan bagi setiap pelanggan melalui pelayanan yang
+                            ramah, profesional, dan personal.</li>
+                        <li>Menjaga warisan budaya perawatan tradisional Indonesia melalui inovasi layanan spa berbasis
+                            rempah.</li>
                     </ul>
                 </div>
             </div>
@@ -54,16 +57,28 @@
             <!-- Gambar Tim -->
             <div class="mt-12">
                 <h3 class="text-2xl font-bold mb-6 text-[#2c1a0f]">Our Team</h3>
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-8">
-                    @foreach ($therapists as $therapist)
-                        <div class="text-center">
-                            <img src="{{ asset('storage/' . $therapist->photo) }}" alt="{{ $therapist->name }}"
-                                class="w-40 h-40 object-cover rounded-full mx-auto">
-                            <h4 class="mt-4 text-xl font-semibold">{{ $therapist->name }}</h4>
-                        </div>
-                    @endforeach
+
+                <div class="swiper myTeamSwiper">
+                    <div class="swiper-wrapper">
+                        @foreach ($therapists as $therapist)
+                            <div class="swiper-slide text-center">
+                                <img src="{{ asset('storage/' . $therapist->photo) }}" alt="{{ $therapist->name }}"
+                                    class="w-40 h-40 object-cover rounded-full mx-auto">
+                                <h4 class="mt-4 text-xl font-semibold">{{ $therapist->name }}</h4>
+                            </div>
+                        @endforeach
+                    </div>
+
+                    <!-- Navigasi -->
+                    <div class="swiper-button-next"></div>
+                    <div class="swiper-button-prev"></div>
+
+                    <!-- Pagination Bullets -->
+                    <div class="swiper-pagination"></div>
                 </div>
             </div>
+
+
 
 
     </section>

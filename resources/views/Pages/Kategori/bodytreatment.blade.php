@@ -433,6 +433,8 @@
 
                         if (!tanggal || !jam || !treatmentId) return;
 
+                        //CEK KETERSEDIAAN THERAPIST PANGGIL API KE AVAILABLE THERAPIST
+
                         fetch(`/api/available-therapists?tanggal=${tanggal}&jam=${jam}&treatment_id=${treatmentId}`)
                             .then(response => response.json())
                             .then(data => {
@@ -454,6 +456,15 @@
                                 }
                             })
                             .catch(err => console.error('Gagal memuat therapist:', err));
+
+                        //tampilkan daftar therapist dari database
+                        // @foreach ($therapists as $therapist)
+                        //     const opt{{ $therapist->id }} = document.createElement('option');
+                        //     opt{{ $therapist->id }}.value = '{{ $therapist->id }}';
+                        //     opt{{ $therapist->id }}.textContent = '{{ $therapist->name }}';
+                        //     therapistSelect.appendChild(opt{{ $therapist->id }});
+                        // @endforeach
+
                     }
 
                     // Panggil saat user ganti tanggal / jam / treatment
@@ -502,10 +513,44 @@
 
 
                     // Event listener supaya dropdown therapist kedua update saat:
-                    document.getElementById('second_treatment_id').addEventListener('change', fetchAvailableTherapistsSecondTreatment);
+                    document.getElementById('second_treatment_id').addEventListener('change',
+                        fetchAvailableTherapistsSecondTreatment);
                     document.getElementById('therapist_id').addEventListener('change', fetchAvailableTherapistsSecondTreatment);
                     document.getElementById('booking_date').addEventListener('change', fetchAvailableTherapistsSecondTreatment);
                     document.getElementById('booking_time').addEventListener('change', fetchAvailableTherapistsSecondTreatment);
+
+                    // Saat therapist kedua dipilih, sembunyikan dia dari dropdown therapist pertama
+                    document.getElementById('second_therapist_id').addEventListener('change', function() {
+                        const secondTherapistId = this.value;
+                        const therapist1Select = document.getElementById('therapist_id');
+
+                        Array.from(therapist1Select.options).forEach(option => {
+                            // Tampilkan semua dulu
+                            option.hidden = false;
+
+                            // Jangan hide opsi default
+                            if (option.value === '') return;
+
+                            // Sembunyikan therapist kedua dari pilihan pertama
+                            option.hidden = (option.value === secondTherapistId);
+                        });
+
+                        // Reset pilihan jika therapist pertama sekarang hidden
+                        if (therapist1Select.value === secondTherapistId) {
+                            therapist1Select.value = '';
+                        }
+                    });
+
+                    // saat therapist pertama berubah, reset pilihan therapist kedua jika sama
+                    document.getElementById('therapist_id').addEventListener('change', function() {
+                        const firstTherapistId = this.value;
+                        const therapist2Select = document.getElementById('second_therapist_id');
+
+                        // Reset pilihan kedua jika sama
+                        if (therapist2Select.value === firstTherapistId) {
+                            therapist2Select.value = '';
+                        }
+                    });
                 </script>
             </div>
         </div>
