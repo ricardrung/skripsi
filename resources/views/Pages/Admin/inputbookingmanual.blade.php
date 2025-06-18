@@ -224,18 +224,35 @@
 
             function updateTotalHarga() {
                 const harga1 = parseInt(hargaInput.value) || 0;
-
                 let harga2 = 0;
+
                 const selected2 = secondTreatmentSelect.options[secondTreatmentSelect.selectedIndex];
                 if (selected2 && selected2.value !== "") {
-                    const happy2 = selected2.dataset.happyhourPrice;
-                    harga2 = parseInt(happy2) || parseInt(selected2.dataset.harga) || 0;
+                    const normal2 = parseInt(selected2.dataset.harga) || 0;
+                    const happy2 = parseInt(selected2.dataset.happyhourPrice) || normal2;
+
+                    // Ambil jam dari booking utama
+                    const jamValue = jamSelect.value;
+                    const day = new Date().getDay();
+                    const isWeekday = day >= 1 && day <= 5;
+
+                    if (isWeekday && jamValue) {
+                        const jamMulai = parseInt(jamValue.split(":")[0]);
+                        if (jamMulai >= 10 && jamMulai < 13) {
+                            harga2 = happy2;
+                        } else {
+                            harga2 = normal2;
+                        }
+                    } else {
+                        harga2 = normal2;
+                    }
                 }
 
                 if (totalHargaInput) {
                     totalHargaInput.value = harga1 + harga2;
                 }
             }
+
 
             function generateJamOptions(durasi) {
                 jamSelect.innerHTML = '<option value="">Pilih Jam</option>';

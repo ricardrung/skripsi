@@ -21,6 +21,15 @@
                 <option value="id_desc" {{ request('order') == 'id_desc' ? 'selected' : '' }}>ID Terbaru</option>
                 <option value="id_asc" {{ request('order') == 'id_asc' ? 'selected' : '' }}>ID Terlama</option>
             </select>
+            <select name="min_rating" class="p-2 border rounded bg-white w-full sm:w-48">
+                <option value="">Semua Rating</option>
+                <option value="5" {{ request('min_rating') == '5' ? 'selected' : '' }}>⭐ 5</option>
+                <option value="4" {{ request('min_rating') == '4' ? 'selected' : '' }}>⭐ 4</option>
+                <option value="3" {{ request('min_rating') == '3' ? 'selected' : '' }}>⭐ 3</option>
+                <option value="2" {{ request('min_rating') == '2' ? 'selected' : '' }}>⭐ 2</option>
+                <option value="1" {{ request('min_rating') == '1' ? 'selected' : '' }}>⭐ 1</option>
+            </select>
+
 
             <!-- Filter Creator -->
             <select name="creator_id" class="p-2 border rounded bg-white w-full sm:w-64">
@@ -64,12 +73,14 @@
                             <th class="py-3 px-4 text-left">Kategori</th>
                             <th class="py-3 px-4 text-left">Tanggal</th>
                             <th class="py-3 px-4 text-left">JamMulai</th>
+                            <th class="py-3 px-4 text-left">Keterangan Waktu</th>
                             <th class="py-3 px-4 text-left">JamSelesai</th>
                             <th class="py-3 px-4 text-left">Durasi</th>
                             <th class="py-3 px-4 text-left">Therapist</th>
                             <th class="py-3 px-4 text-left">Harga</th>
                             <th class="py-3 px-4 text-left">Status</th>
                             <th class="py-3 px-4 text-left">Dibuat Oleh</th>
+                            <th class="py-3 px-4 text-left">Feedback</th>
                             <th class="py-3 px-4 text-left">Aksi</th>
                         </tr>
                     </thead>
@@ -91,6 +102,44 @@
                                     $start = \Carbon\Carbon::parse($booking->booking_time);
                                     $end = $start->copy()->addMinutes($booking->treatment->duration_minutes);
                                 @endphp
+                                @php
+                                    $bookingDateTime = \Carbon\Carbon::parse(
+                                        $booking->booking_date . ' ' . $booking->booking_time,
+                                    );
+                                    $now = \Carbon\Carbon::now();
+                                    $diffMinutes = $now->diffInMinutes($bookingDateTime, false);
+
+                                    if ($diffMinutes > 0) {
+                                        $jam = floor($diffMinutes / 60);
+                                        $menit = $diffMinutes % 60;
+                                        $relativeTime = 'Mulai dalam ';
+                                        if ($jam > 0) {
+                                            $relativeTime .= $jam . ' jam ';
+                                        }
+                                        if ($menit > 0) {
+                                            $relativeTime .= $menit . ' menit';
+                                        }
+                                    } elseif ($diffMinutes === 0) {
+                                        $relativeTime = 'Sedang dimulai sekarang';
+                                    } else {
+                                        $diffMinutes = abs($diffMinutes);
+                                        $jam = floor($diffMinutes / 60);
+                                        $menit = $diffMinutes % 60;
+                                        $relativeTime = 'Sudah lewat ';
+                                        if ($jam > 0) {
+                                            $relativeTime .= $jam . ' jam ';
+                                        }
+                                        if ($menit > 0) {
+                                            $relativeTime .= $menit . ' menit';
+                                        }
+                                    }
+                                @endphp
+
+                                <td class="py-3 px-4 text-sm italic text-gray-700">
+                                    {{ trim($relativeTime) }}
+                                </td>
+
+
                                 <td class="py-3 px-4">{{ $end->format('H:i:s') }}</td>
                                 <td class="py-3 px-4">{{ $booking->treatment->duration_minutes }} menit</td>
                                 <td class="py-3 px-4">{{ $booking->therapist->name ?? '-' }}</td>
@@ -111,6 +160,23 @@
                                     </span>
                                 </td>
                                 <td class="py-3 px-4">{{ $booking->creator->name ?? '-' }}</td>
+                                <td class="py-3 px-4">
+                                    @if ($booking->feedback)
+                                        <div class="flex flex-col gap-1">
+                                            <div class="text-yellow-500">
+                                                @for ($i = 1; $i <= $booking->feedback->rating; $i++)
+                                                    ⭐
+                                                @endfor
+                                            </div>
+                                            <div class="text-gray-600 text-sm italic">
+                                                "{{ $booking->feedback->comment ?: 'Tidak ada komentar.' }}"
+                                            </div>
+                                        </div>
+                                    @else
+                                        <span class="text-gray-400 text-sm italic">Belum ada</span>
+                                    @endif
+                                </td>
+
                                 <td class="py-3 px-4 space-y-2">
                                     {{-- Tombol Detail --}}
                                     <a href="#" onclick="showDetail({{ $booking->toJson() }})"
@@ -162,7 +228,8 @@
 
                                         {{-- Tandai Lunas (jika belum lunas) --}}
                                         @if ($booking->payment_status !== 'sudah_bayar')
-                                            <form method="POST" action="{{ route('booking.markAsPaid', $booking->id) }}">
+                                            <form method="POST"
+                                                action="{{ route('booking.markAsPaid', $booking->id) }}">
                                                 @csrf
                                                 @method('PATCH')
                                                 <button type="submit"
@@ -172,6 +239,18 @@
                                             </form>
                                         @endif
                                     @endif
+
+                                    {{-- //kirim wa --}}
+                                    @php
+                                        $nomor =
+                                            '62' . ltrim($booking->user->phone ?? ($booking->guest_phone ?? ''), '0');
+                                    @endphp
+
+                                    <a href="https://wa.me/{{ $nomor }}" target="_blank"
+                                        class="block w-full bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600 text-sm text-center">
+                                        WhatsApp
+                                    </a>
+
                                 </td>
 
                             </tr>
@@ -202,7 +281,7 @@
         </script>
     @endif
 
-    {{-- ✅ Fungsi konfirmasi pembatalan --}}
+    {{--  Fungsi konfirmasi pembatalan --}}
     <script>
         function confirmCancelBooking(id) {
             event.preventDefault(); // agar tidak langsung submit
@@ -222,6 +301,9 @@
             });
         }
 
+
+
+
         function showDetail(booking) {
             // Isi data
             // document.getElementById('detailTreatment').textContent = booking.treatment?.name ?? '-';
@@ -238,6 +320,8 @@
                 'Payment Gateway';
             document.getElementById('detailPaymentStatus').textContent = (booking.payment_status === 'sudah_bayar') ?
                 'Sudah Bayar' : 'Belum Bayar';
+            document.getElementById("detailRoomType").textContent = booking.room_type ? booking.room_type.charAt(0)
+                .toUpperCase() + booking.room_type.slice(1) : '-';
             // Format tanggal pesan dibuat (created_at)
             const createdAt = new Date(booking.created_at).toLocaleString('id-ID', {
                 day: '2-digit',
@@ -275,29 +359,11 @@
                 <hr class="my-2 border-gray-200">
                 <p><strong>Kontak Pelanggan:</strong> <span id="detailPhone"></span></p>
                 <hr class="my-2 border-gray-200">
-                {{-- <p><strong>Layanan:</strong> <span id="detailTreatment"></span></p>
-                <hr class="my-2 border-gray-200">
-                <p><strong>Kategori:</strong> <span id="detailKategori"></span></p>
-                <hr class="my-2 border-gray-200">
-                <p><strong>Tanggal:</strong> <span id="detailTanggal"></span></p>
-                <hr class="my-2 border-gray-200">
-                <p><strong>Jam Mulai:</strong> <span id="detailJam"></span></p>
-                <hr class="my-2 border-gray-200">
-                <p><strong>Durasi:</strong> <span id="detailDurasi"></span></p>
-                <hr class="my-2 border-gray-200">
-                <p><strong>Harga:</strong> <span id="detailHarga"></span></p>
-                <hr class="my-2 border-gray-200">
-                <p><strong>Status:</strong> <span id="detailStatus"></span></p>
-                <hr class="my-2 border-gray-200">
-                <p><strong>Therapist:</strong> <span id="detailTherapist"></span></p>
-                <hr class="my-2 border-gray-200">
-                <p><strong>Dibuat Oleh:</strong> <span id="detailCreator"></span></p>
-                <hr class="my-2 border-gray-200"> --}}
-                {{-- <p><strong>Jam Selesai:</strong> <span id="detailEndTime"></span></p>
-                <hr class="my-2 border-gray-200"> --}}
                 <p><strong>Metode Pembayaran:</strong> <span id="detailPaymentMethod"></span></p>
                 <hr class="my-2 border-gray-200">
                 <p><strong>Status Pembayaran:</strong> <span id="detailPaymentStatus"></span></p>
+                <hr class="my-2 border-gray-200">
+                <p><strong>Tipe Ruangan:</strong> <span id="detailRoomType"></span></p>
                 <hr class="my-2 border-gray-200">
                 <p><strong>Dipesan Pada:</strong> <span id="detailCreatedAt"></span></p>
                 <hr class="my-2 border-gray-200">

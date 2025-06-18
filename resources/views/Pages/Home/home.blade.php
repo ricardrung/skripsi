@@ -53,37 +53,77 @@
                 <p class="text-lg"><i class="fa-regular fa-clock"></i> 10:00 - 22:00 </p>
             </div>
 
+            <div class="mt-16 px-4 md:px-6">
+                <h3 class="text-3xl font-bold text-center mb-10 text-[#2c1a0f]">Our Team</h3>
 
-            <!-- Gambar Tim -->
-            <div class="mt-12">
-                <h3 class="text-2xl font-bold mb-6 text-[#2c1a0f]">Our Team</h3>
-
-                <div class="swiper myTeamSwiper">
-                    <div class="swiper-wrapper">
-                        @foreach ($therapists as $therapist)
-                            <div class="swiper-slide text-center">
-                                <img src="{{ asset('storage/' . $therapist->photo) }}" alt="{{ $therapist->name }}"
-                                    class="w-40 h-40 object-cover rounded-full mx-auto">
-                                <h4 class="mt-4 text-xl font-semibold">{{ $therapist->name }}</h4>
-                            </div>
-                        @endforeach
+                <div class="relative max-w-7xl mx-auto">
+                    <!-- Navigation buttons dengan positioning yang lebih tepat -->
+                    <div class="absolute z-10 top-1/2 -left-4 md:-left-10 transform -translate-y-1/2">
+                        <div class="swiper-button-prev !text-[#2c1a0f] !w-8 !h-8 md:!w-10 md:!h-10"></div>
+                    </div>
+                    <div class="absolute z-10 top-1/2 -right-4 md:-right-10 transform -translate-y-1/2">
+                        <div class="swiper-button-next !text-[#2c1a0f] !w-8 !h-8 md:!w-10 md:!h-10"></div>
                     </div>
 
-                    <!-- Navigasi -->
-                    <div class="swiper-button-next"></div>
-                    <div class="swiper-button-prev"></div>
-
-                    <!-- Pagination Bullets -->
-                    <div class="swiper-pagination"></div>
+                    <!-- Swiper container dengan padding yang seimbang -->
+                    <div class="swiper myTherapistSwiper mx-8 md:mx-12">
+                        <div class="swiper-wrapper">
+                            @foreach ($therapists as $therapist)
+                                <div class="swiper-slide">
+                                    <!-- Container dengan flex dan centering yang lebih baik -->
+                                    <div class="flex flex-col items-center justify-center text-center h-full px-2">
+                                        <div class="flex flex-col items-center w-full max-w-[160px]">
+                                            @if ($therapist->photo)
+                                                <img src="{{ asset('storage/' . $therapist->photo) }}"
+                                                    alt="{{ $therapist->name }}"
+                                                    class="w-28 h-28 rounded-full object-cover border-2 border-[#2c1a0f] mb-3">
+                                            @else
+                                                <div
+                                                    class="w-28 h-28 rounded-full bg-gray-300 flex items-center justify-center mb-3">
+                                                    <span class="text-gray-600 text-sm">No Photo</span>
+                                                </div>
+                                            @endif
+                                            <h4 class="text-base font-semibold text-[#2c1a0f] leading-tight text-center">
+                                                {{ $therapist->name }}
+                                            </h4>
+                                        </div>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
                 </div>
             </div>
 
-
-
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    new Swiper('.myTherapistSwiper', {
+                        slidesPerView: 1,
+                        spaceBetween: 20,
+                        loop: true,
+                        centeredSlides: true, // Menambahkan centering
+                        navigation: {
+                            nextEl: '.swiper-button-next',
+                            prevEl: '.swiper-button-prev',
+                        },
+                        breakpoints: {
+                            640: {
+                                slidesPerView: 2,
+                                centeredSlides: false, // Disable centering untuk multiple slides
+                            },
+                            1024: {
+                                slidesPerView: 3,
+                                centeredSlides: false,
+                            }
+                        }
+                    });
+                });
+            </script>
 
     </section>
 
     <!-- Peta Lokasi -->
+
     <section id="peta" class="py-16 bg-gray-100 scroll-mt-16">
         <div>
             <h3 class="text-3xl font-bold mb-8 text-center text-[#2c1a0f]">Our Location</h3>
@@ -94,7 +134,6 @@
                     referrerpolicy="no-referrer-when-downgrade">
                 </iframe>
             </div>
-        </div>
         </div>
     </section>
 @endsection

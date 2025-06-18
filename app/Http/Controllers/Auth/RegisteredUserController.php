@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
 use Illuminate\View\View;
+use App\Services\MembershipService;
 
 class RegisteredUserController extends Controller
 {
@@ -48,7 +49,8 @@ class RegisteredUserController extends Controller
             'photo' => null, // atau null jika belum upload
             'password' => Hash::make($request->password),
         ]);
-
+        
+        app(MembershipService::class)->checkOrCreateYearlyMembership($user);
         event(new Registered($user));
 
         Auth::login($user);

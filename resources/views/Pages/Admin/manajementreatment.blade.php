@@ -14,7 +14,7 @@
             <input type="text" name="search" placeholder="Cari nama paket..." value="{{ request('search') }}"
                 class="p-2 border rounded w-full md:w-64">
 
-            <select name="category" class="p-2 border rounded bg-white">
+            <select name="category" class="p-2 border rounded w-full sm:w-64 bg-white">
                 <option value="">Semua Kategori</option>
                 @foreach ($categories as $cat)
                     <option value="{{ $cat->id }}" {{ request('category') == $cat->id ? 'selected' : '' }}>

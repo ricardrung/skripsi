@@ -6,6 +6,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use App\Models\UserMembership;
 
 class User extends Authenticatable
 {
@@ -63,7 +64,23 @@ class User extends Authenticatable
     }
 
     public function isAdmin()
-{
-    return $this->role === 'admin'; // sesuaikan jika kolom kamu bukan 'role'
-}
+    {
+        return $this->role === 'admin';  
+    }
+
+    public function memberships()
+    {
+        return $this->hasMany(UserMembership::class);
+    }
+
+    public function currentMembership()
+    {
+        return $this->hasOne(UserMembership::class)
+            ->where('year', now()->year)
+            ->with('membership');
+    }
+
+
+
+    
 }

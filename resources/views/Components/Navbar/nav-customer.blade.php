@@ -32,7 +32,7 @@
                 <a href="/contact" class="hover:text-gray-300">Contact Us</a>
                 <a href="/riwayatbooking" class="hover:text-gray-300">Bookings History</a>
                 <a href="/promo" class="hover:text-gray-300">Promo</a>
-
+                <a href="/membership" class="hover:text-gray-300">Membership</a>
             </nav>
 
             <!-- Search & Auth Buttons (Hanya muncul di layar 1024px ke atas) -->
@@ -175,6 +175,7 @@
             <a href="/contact" class="block px-4 py-2 border-b border-gray-600">Contact Us</a>
             <a href="/riwayatbooking" class="block px-4 py-2 border-b border-gray-600">History Bookings</a>
             <a href="/promo" class="block px-4 py-2 border-b border-gray-600">Promo</a>
+            <a href="/membership" class="block px-4 py-2 border-b border-gray-600">Membership</a>
 
             <!-- Mobile Search -->
             {{-- <div class="px-4 py-2">

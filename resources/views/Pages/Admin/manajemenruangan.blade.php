@@ -89,8 +89,8 @@
 
                     <input type="text" name="room_name" placeholder="Nama Ruangan" class="border rounded p-2 w-full mb-2"
                         required>
-                    <input type="text" name="room_type" placeholder="Tipe Ruangan (contoh: reflexology)"
-                        class="border rounded p-2 w-full mb-2" required>
+                    <input type="text" name="room_type" placeholder="Tipe Ruangan" class="border rounded p-2 w-full mb-2"
+                        required>
                     <input type="number" name="capacity" placeholder="Kapasitas" class="border rounded p-2 w-full mb-2"
                         required>
                     <textarea name="description" placeholder="Deskripsi" class="border rounded p-2 w-full mb-2"></textarea>

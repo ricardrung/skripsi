@@ -10,22 +10,26 @@
         <div class="container mx-auto px-4 text-center">
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
 
+                @php
+                    use App\Services\MembershipService;
+
+                    $membershipService = app(MembershipService::class);
+                @endphp
+
                 @foreach ($treatments as $treatment)
                     <div class="bg-white shadow-lg rounded-lg overflow-hidden">
+                        {{-- Video --}}
                         @if (!empty($treatment->demo_video_url))
                             @php
                                 $url = $treatment->demo_video_url;
+                                $videoId = '';
 
                                 if (Str::contains($url, 'youtu.be')) {
-                                    // Untuk link short youtu.be
                                     preg_match('/youtu\.be\/([^\?]+)/', $url, $matches);
                                     $videoId = $matches[1] ?? '';
                                 } elseif (Str::contains($url, 'watch?v=')) {
-                                    // Untuk link youtube.com/watch?v=
                                     parse_str(parse_url($url, PHP_URL_QUERY), $query);
                                     $videoId = $query['v'] ?? '';
-                                } else {
-                                    $videoId = '';
                                 }
 
                                 $embedUrl = $videoId ? 'https://www.youtube.com/embed/' . $videoId : '';
@@ -34,18 +38,49 @@
                             @if ($embedUrl)
                                 <div class="my-4">
                                     <iframe width="100%" height="200" src="{{ $embedUrl }}" frameborder="0"
-                                        allowfullscreen class="rounded-lg shadow">
-                                    </iframe>
+                                        allowfullscreen class="rounded-lg shadow"></iframe>
                                 </div>
                             @endif
                         @endif
+
                         <div class="p-6">
+
+                            @php
+                                $originalPrice = $treatment->price;
+                                $discount = Auth::check()
+                                    ? $membershipService->getUserDiscount(
+                                        Auth::user(),
+                                        $treatment->category->name ?? '',
+                                    )
+                                    : 0;
+                                $finalPrice =
+                                    $discount > 0 ? floor($originalPrice * (1 - $discount / 100)) : $originalPrice;
+                            @endphp
+                            <pre class="text-sm text-red-600 text-left">
+USER: {{ Auth::user()->name ?? 'Guest' }}
+Membership: {{ Auth::user()->membership?->name ?? '-' }}
+Scope: {{ Auth::user()->membership?->applies_to ?? '-' }}
+Category: {{ $treatment->category->name ?? '-' }}
+Diskon: {{ $discount }}%
+</pre>
+
+
+
                             <h3 class="text-2xl font-semibold text-[#2c1a0f]">{{ $treatment->name }}</h3>
                             <p class="text-gray-700 my-2">{{ $treatment->description }}</p>
 
-                            <span class="block text-lg font-bold text-[#8b5a2b]">Rp
-                                {{ number_format($treatment->price, 0, ',', '.') }}</span>
+                            @if ($finalPrice < $originalPrice)
+                                <span class="text-sm line-through text-gray-500">Rp
+                                    {{ number_format($originalPrice, 0, ',', '.') }}</span>
+                                <span class="block text-lg font-bold text-[#8b5a2b]">Rp
+                                    {{ number_format($finalPrice, 0, ',', '.') }}</span>
+                                <p class="text-green-600 text-sm font-semibold">Diskon Member: {{ $discount }}%</p>
+                            @else
+                                <span class="block text-lg font-bold text-[#8b5a2b]">Rp
+                                    {{ number_format($originalPrice, 0, ',', '.') }}</span>
+                            @endif
 
+                            {{-- Happy Hour --}}
                             @if ($treatment->happy_hour_price)
                                 <div class="mt-2 p-3 bg-yellow-50 border-l-4 border-yellow-500 text-yellow-800 rounded-md">
                                     <p class="text-sm font-medium">
@@ -57,9 +92,10 @@
                                 </div>
                             @endif
 
+                            {{-- Tombol Booking --}}
                             @auth
                                 <button
-                                    onclick="openModal('{{ $treatment->name }}', '{{ $treatment->description }}', {{ $treatment->price }}, {{ $treatment->happy_hour_price ?? 0 }}, {{ $treatment->id }})"
+                                    onclick="openModal('{{ $treatment->name }}', '{{ $treatment->description }}', {{ $originalPrice }}, {{ $treatment->happy_hour_price ?? 0 }}, {{ $treatment->id }}, '{{ $treatment->category->name ?? '' }}', {{ $discount }})"
                                     class="mt-4 inline-block bg-[#8b5a2b] text-white px-4 py-2 rounded-lg hover:bg-[#6b4223] transition">
                                     Booking
                                 </button>
@@ -72,6 +108,7 @@
                         </div>
                     </div>
                 @endforeach
+
 
                 <!-- Form Booking Modal -->
                 @auth
@@ -100,6 +137,9 @@
                                 <!-- Hidden Treatment ID -->
                                 <input type="hidden" id="treatment_id" name="treatment_id">
                                 <input type="hidden" name="user_id" value="{{ auth()->id() }}">
+                                <input type="hidden" id="user_membership_level"
+                                    value="{{ auth()->user()->membership->level ?? 'classic' }}">
+                                <input type="hidden" id="treatment_category" value="">
 
                                 <!-- Nama -->
                                 <div>
@@ -297,7 +337,7 @@
                         updateJam();
                     });
 
-                    function openModal(namaPaket, deskripsiPaket, hargaNormal, hargaHappyHour, treatmentId) {
+                    function openModal(namaPaket, deskripsiPaket, hargaNormal, hargaHappyHour, treatmentId, category, diskonMember) {
                         document.getElementById("bookingModal").classList.remove("hidden");
 
                         // Set paket spa yang dipilih di dalam form
@@ -307,6 +347,8 @@
                         // Simpan harga dalam elemen modal
                         document.getElementById("bookingModal").setAttribute("data-harga-normal", hargaNormal);
                         document.getElementById("bookingModal").setAttribute("data-harga-happy-hour", hargaHappyHour);
+                        document.getElementById("bookingModal").setAttribute("data-diskon-member", diskonMember);
+
 
                         setMinDate();
                         updateJam();
@@ -378,6 +420,7 @@
                         const modal = document.getElementById("bookingModal");
                         const hargaNormal = parseInt(modal.getAttribute("data-harga-normal")) || 0;
                         const hargaHappyHour = parseInt(modal.getAttribute("data-harga-happy-hour")) || 0;
+                        const diskonMember = parseInt(modal.getAttribute("data-diskon-member")) || 0;
 
                         const tanggal = document.getElementById("booking_date").value;
                         const jamSelect = document.getElementById("booking_time").value;
@@ -400,7 +443,10 @@
                             }
                         }
 
-                        hargaText.textContent = "Rp" + hargaFinal.toLocaleString();
+                        // Hitung diskon dari membership
+                        const hargaSetelahDiskon = hargaFinal - (hargaFinal * diskonMember / 100);
+
+                        hargaText.textContent = "Rp" + Math.round(hargaSetelahDiskon).toLocaleString();
                     }
                     document.getElementById('second_treatment_id').addEventListener('change', updateHarga);
 

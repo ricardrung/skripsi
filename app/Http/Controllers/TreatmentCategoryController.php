@@ -22,8 +22,9 @@ class TreatmentCategoryController extends Controller
     $therapists = User::where('role', 'therapist')
         ->where('availability', 'tersedia')
         ->get();
-
-    return view('pages.kategori.facetreatment', compact('treatments', 'therapists', 'allTreatments'));
+    
+    $membership = Auth::check() ? Auth::user()->membership : null;
+    return view('pages.kategori.facetreatment', compact('treatments', 'therapists', 'allTreatments', 'membership'));
 }
 
 public function bodyTreatmentPage()
@@ -38,7 +39,29 @@ public function bodyTreatmentPage()
         ->where('availability', 'tersedia')
         ->get();
 
-    return view('pages.kategori.bodytreatment', compact('treatments', 'therapists', 'allTreatments'));
+    $user = Auth::user();
+    $membership = null;
+    if ($user) {
+        $membership = app(\App\Services\MembershipService::class)
+            ->getCurrentMembership($user);
+
+        foreach ($treatments as $treatment) {
+            $categoryName = $treatment->category->name ?? '';
+            $discount = app(\App\Services\MembershipService::class)
+                ->getUserDiscount($user, $categoryName);
+            
+            $treatment->discount = $discount;
+            $treatment->final_price = $discount > 0
+                ? $treatment->price - (($discount / 100) * $treatment->price)
+                : $treatment->price;
+        }
+    } else {
+        foreach ($treatments as $treatment) {
+            $treatment->discount = 0;
+            $treatment->final_price = $treatment->price;
+        }
+    }
+    return view('pages.kategori.bodytreatment', compact('treatments', 'therapists', 'allTreatments', 'membership'));
 }
 
 public function hairTreatmentPage()
@@ -53,7 +76,8 @@ public function hairTreatmentPage()
         ->where('availability', 'tersedia')
         ->get();
 
-    return view('pages.kategori.hairtreatment', compact('treatments', 'therapists', 'allTreatments'));
+    $membership = Auth::check() ? Auth::user()->membership : null;
+    return view('pages.kategori.hairtreatment', compact('treatments', 'therapists', 'allTreatments', 'membership'));
 }
 
 public function reflexologyTreatmentPage()
@@ -68,7 +92,8 @@ public function reflexologyTreatmentPage()
         ->where('availability', 'tersedia')
         ->get();
 
-    return view('pages.kategori.reflexology', compact('treatments', 'therapists', 'allTreatments'));
+    $membership = Auth::check() ? Auth::user()->membership : null;
+    return view('pages.kategori.reflexology', compact('treatments', 'therapists', 'allTreatments', 'membership'));
 }
 
 public function packagesTreatmentPage()
@@ -83,7 +108,8 @@ public function packagesTreatmentPage()
         ->where('availability', 'tersedia')
         ->get();
 
-    return view('pages.kategori.treatmentpackages', compact('treatments', 'therapists', 'allTreatments'));
+    $membership = Auth::check() ? Auth::user()->membership : null;
+    return view('pages.kategori.treatmentpackages', compact('treatments', 'therapists', 'allTreatments', 'membership'));
 }
 
 public function alacarteTreatmentPage()
@@ -97,7 +123,8 @@ public function alacarteTreatmentPage()
         ->where('availability', 'tersedia')
         ->get();
 
-    return view('pages.kategori.alacarte', compact('treatments', 'therapists', 'allTreatments'));
+    $membership = Auth::check() ? Auth::user()->membership : null;
+    return view('pages.kategori.alacarte', compact('treatments', 'therapists', 'allTreatments', 'membership'));
 }
 
 public function promoTreatmentPage()

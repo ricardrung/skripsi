@@ -15,6 +15,8 @@ use App\Http\Controllers\LaporanController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\SpaRoomController;
+use App\Http\Controllers\BookingFeedbackController;
+use App\Http\Controllers\MembershipController;
 
 // Rute default (bisa untuk semua)
 Route::get('/', [TreatmentCategoryController::class, 'index']);
@@ -53,6 +55,10 @@ Route::middleware(['auth', 'verified', 'customer'])->group(function () {
     Route::delete('/riwayatbooking/{id}', [BookingController::class, 'cancelBookingCustomer'])->name('booking.cancel.customer');
     Route::get('/promo', [TreatmentCategoryController::class, 'promoTreatmentPage']);
     Route::get('/booking/pay-again/{id}', [BookingController::class, 'payAgain'])->name('booking.payAgain');
+
+    Route::post('/feedback', [BookingFeedbackController::class, 'store'])->name('feedback.store');
+    Route::get('/membership', [MembershipController::class, 'index'])->name('user.membership');
+
 
 });
 
@@ -106,6 +112,9 @@ Route::middleware(['auth', 'verified', 'admin'])->group(function () {
     Route::get('/manajemen-pembayaran', [BookingController::class, 'manajemenPembayaran'])->name('booking.manajemen.pembayaran');
     Route::patch('/booking/{id}/status-bayar', [BookingController::class, 'updateStatusBayar'])->name('booking.update.status.bayar');
     Route::get('/laporan-pemasukan/download', [LaporanController::class, 'downloadCsv'])->name('laporan.pemasukan.download');
+
+    Route::resource('memberships', MembershipController::class);
+
 
 });
 

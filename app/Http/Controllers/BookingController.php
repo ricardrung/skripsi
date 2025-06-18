@@ -12,6 +12,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Midtrans\Config;
 use Midtrans\Snap;
+use App\Services\MembershipService;
+
 
 
 class BookingController extends Controller
@@ -19,7 +21,7 @@ class BookingController extends Controller
     //
 public function index(Request $request)
 {
-    $query = Booking::with(['treatment.category', 'therapist', 'user', 'creator']);
+    $query = Booking::with(['treatment.category', 'therapist', 'user', 'creator', 'feedback']);
     $creators = User::select('id', 'name')->get();
 
     // 🔍 Filter berdasarkan nama layanan (search)
@@ -51,7 +53,15 @@ public function index(Request $request)
 
     if ($request->filled('creator_id')) {
     $query->where('created_by', $request->creator_id); 
-}
+    }
+
+    if ($request->filled('min_rating')) {
+    $query->whereHas('feedback', function ($q) use ($request) {
+        $q->where('rating', '>=', (int) $request->min_rating);
+    });
+    }
+
+    
 
 
     $bookings = $query->orderBy('booking_date', 'desc')->paginate(10);
@@ -104,6 +114,7 @@ public function storeCustomer(Request $request)
     $startTime = Carbon::parse($request->booking_time);
     $endTime = $startTime->copy()->addMinutes($treatment->duration_minutes);
 
+    // therapist pilihkan untuk saya
     if (empty($request->therapist_id)) {
         $availableTherapists = User::where('role', 'therapist')->whereIn('availability', ['tersedia', 'sedang menangani'])->get()->filter(function ($therapist) use ($request, $startTime, $endTime) {
             return !Booking::where('therapist_id', $therapist->id)
@@ -169,13 +180,17 @@ public function storeCustomer(Request $request)
         }
     }
 
-    $finalPrice = $treatment->price;
-
+    $basePrice = $treatment->price;
     if ($isPromoReward) {
         $finalPrice = 0;
     } elseif ($isHappyHour) {
-        $finalPrice = $treatment->happy_hour_price;
+        $basePrice = $treatment->happy_hour_price;
     }
+
+    // 💸 Hitung diskon membership
+    $discountPercent = app(MembershipService::class)->getUserDiscount(Auth::user(), $treatment->category->name ?? '');
+    $finalPrice = $basePrice - ($basePrice * $discountPercent / 100);
+
 
         // 1. Ambil treatment & room_type-nya
     $treatment = Treatment::findOrFail($request->treatment_id);
@@ -259,10 +274,14 @@ $createdBookingIds = [];
             Carbon::createFromTimeString('13:00:00')
         );
 
-    $finalPrice2 = $treatment2->price;
+    $basePrice2 = $treatment2->price;
     if ($isHappyHour2) {
-        $finalPrice2 = $treatment2->happy_hour_price;
+        $basePrice2 = $treatment2->happy_hour_price;
     }
+
+    $discountPercent2 = app(MembershipService::class)->getUserDiscount(Auth::user(), $treatment2->category->name ?? '');
+    $finalPrice2 = $basePrice2 - ($basePrice2 * $discountPercent2 / 100);
+
 
     $secondTherapistId = $request->second_therapist_id;
 
@@ -404,6 +423,12 @@ if ($request->payment_method === 'gateway') {
     return view('pages.booking.snap', compact('snapToken'));
 }
 
+    if ($request->payment_method === 'cash') {
+        // ✅ Tambah belanja ke membership langsung
+        app(MembershipService::class)->addSpending(Auth::user(), $totalFinalPrice);
+
+        return redirect()->route('booking.riwayat')->with('success', 'Booking berhasil ditambahkan.');
+    }
 
 return redirect()->route('booking.riwayat')->with('success', 'Booking berhasil ditambahkan.');
 
@@ -511,6 +536,7 @@ public function storeAdmin(Request $request)
         'second_treatment_id' => 'nullable|exists:treatments,id',
         'second_therapist_id' => 'nullable|exists:users,id',
         'is_promo_reward' => 'nullable|boolean',
+        'payment_status' => 'nullable|in:sudah_bayar,belum_bayar',
     ]);
 
     $bookingDateTime = Carbon::parse($request->booking_date . ' ' . $request->booking_time);
@@ -605,7 +631,7 @@ public function storeAdmin(Request $request)
             'is_happy_hour' => $isHappyHour,
             'is_promo_reward' => $isPromoReward,
             'payment_method' => $request->payment_method,
-            'payment_status' => 'belum_bayar',
+            'payment_status' => $request->payment_status ?? 'belum_bayar',
             'status' => 'menunggu',
             'note' => $request->note,
             'room_type' => $roomType,
@@ -668,12 +694,23 @@ public function storeAdmin(Request $request)
                 'is_happy_hour' => $isHappyHour2,
                 'is_promo_reward' => false,
                 'payment_method' => $request->payment_method,
-                'payment_status' => 'belum_bayar',
+                'payment_status' => $request->payment_status ?? 'belum_bayar',
                 'status' => 'menunggu',
                 'note' => $request->note,
                 'room_type' => 'double',
             ]);
         }
+
+        if ($request->user_id && $request->payment_method === 'cash' && $request->input('payment_status') === 'sudah_bayar' ) {
+                $totalSpending = $finalPrice + ($finalPrice2 ?? 0);
+
+                app(MembershipService::class)->addSpending(
+                    User::find($request->user_id),
+                    $totalSpending
+                );
+            }
+
+
 
         DB::commit();
 
@@ -828,6 +865,7 @@ public function updateStatus($id, $status)
 }
 
 
+// dibookingmanajemen
 public function markAsPaid($id)
 {
     $booking = Booking::findOrFail($id);
@@ -836,7 +874,22 @@ public function markAsPaid($id)
         return back()->with('error', 'Tidak bisa menandai lunas karena booking sudah dibatalkan.');
     }
 
+    // Cek apakah status berubah dari belum_bayar ke sudah_bayar
+    $wasUnpaid = $booking->payment_status === 'belum_bayar';
+
     $booking->update(['payment_status' => 'sudah_bayar']);
+
+     // ✅ Tambahkan spending jika memenuhi syarat
+    if ($wasUnpaid && $booking->user_id && $booking->payment_method === 'cash') {
+        try {
+            app(MembershipService::class)->addSpending(
+                User::find($booking->user_id),
+                $booking->final_price
+            );
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Failed to add spending in markAsPaid: ' . $e->getMessage());
+        }
+    }
 
     return back()->with('success', 'Status pembayaran ditandai sebagai lunas.');
 }
@@ -873,6 +926,7 @@ public function manajemenPembayaran(Request $request)
     return view('pages.admin.manajemenpembayaran', compact('bookings', 'therapists'));
 }
 
+// di manajemenPembayaran
 public function updateStatusBayar($id)
 {
     $booking = Booking::findOrFail($id);
@@ -880,9 +934,23 @@ public function updateStatusBayar($id)
     if ($booking->status === 'batal') {
         return back()->with('error', 'Tidak bisa memperbarui status pembayaran karena booking sudah dibatalkan.');
     }
-    
+    // Cek apakah status berubah dari belum_bayar ke sudah_bayar
+    $wasUnpaid = $booking->payment_status === 'belum_bayar';
+
     $booking->payment_status = 'sudah_bayar';
     $booking->save();
+
+     // ✅ Tambahkan spending jika memenuhi syarat
+    if ($wasUnpaid && $booking->user_id && $booking->payment_method === 'cash') {
+        try {
+            app(MembershipService::class)->addSpending(
+                User::find($booking->user_id),
+                $booking->final_price
+            );
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Failed to add spending in updateStatusBayar: ' . $e->getMessage());
+        }
+    }
 
     return redirect()->back()->with('success', 'Status pembayaran diperbarui!');
 }

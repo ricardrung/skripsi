@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Booking;
+use App\Services\MembershipService;
 
 class PaymentController extends Controller
 {
@@ -29,6 +30,7 @@ class PaymentController extends Controller
                     'payment_status' => 'sudah_bayar',
                     'payment_method' => 'gateway',
                 ]);
+                app(MembershipService::class)->addSpending($booking->user, $booking->final_price);
             }
         }
 

@@ -116,8 +116,8 @@
                                         </div>
                                     </div>
                                 @elseif ($booking->status == 'menunggu')
-                                    <span
-                                        class="bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full text-sm">Menunggu</span>
+                                    <span class="bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full text-sm">Harap datang
+                                        tepat Waktu!</span>
                                 @elseif ($booking->status == 'batal')
                                     <span class="bg-red-100 text-red-700 px-3 py-1 rounded-full text-sm">Dibatalkan</span>
                                 @elseif ($booking->status == 'sedang')
@@ -129,8 +129,6 @@
                                         </div>
                                     </div>
                                 @endif
-
-
                             </div>
 
                         </div>
@@ -171,6 +169,15 @@
                                     Bayar Sekarang
                                 </a>
                             </p>
+                        @endif
+
+                        @if ($booking->status === 'selesai' && !$booking->feedback)
+                            <button onclick="openFeedbackModal({{ $booking->id }})"
+                                class="bg-yellow-500 text-white px-4 py-1 rounded hover:bg-yellow-600 text-sm">
+                                Beri Feedback
+                            </button>
+                        @elseif ($booking->status === 'selesai' && $booking->feedback)
+                            <span class="text-green-600 text-sm">Feedback Terkirim</span>
                         @endif
 
 
@@ -243,6 +250,8 @@
                         <hr class="my-2 border-gray-200">
                         <p><strong>Durasi:</strong> <span id="detailDurasi"></span></p>
                         <hr class="my-2 border-gray-200">
+                        <p><strong>Tipe Ruangan:</strong> <span id="detailRoomType"></span></p>
+                        <hr class="my-2 border-gray-200">
                         <p><strong>Dipesan Pada:</strong> <span id="detailDipesan"></span></p>
                         <hr class="my-2 border-gray-200">
                         <p><strong>Status:</strong> <span id="detailStatus"></span></p>
@@ -260,6 +269,62 @@
             </div>
         @endif
     </div>
+
+
+    {{-- //feedback --}}
+    <!-- Tailwind Feedback Modal -->
+    <div id="feedbackModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden items-center justify-center">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-md p-6 relative">
+            <button onclick="closeFeedbackModal()"
+                class="absolute top-2 right-3 text-gray-500 hover:text-black text-lg">✕</button>
+
+            <form action="{{ route('feedback.store') }}" method="POST" class="space-y-4">
+                @csrf
+                <input type="hidden" name="booking_id" id="modal-booking-id">
+
+                <h2 class="text-xl font-semibold text-[#2c1a0f]">📝 Feedback Anda</h2>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Rating</label>
+                    <select name="rating"
+                        class="mt-1 block w-full rounded border-gray-300 shadow-sm focus:ring-[#2c1a0f] focus:border-[#2c1a0f]"
+                        required>
+                        <option value="">Pilih Rating</option>
+                        @for ($i = 5; $i >= 1; $i--)
+                            <option value="{{ $i }}">{{ $i }} ⭐</option>
+                        @endfor
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Komentar</label>
+                    <textarea name="comment" rows="3"
+                        class="mt-1 block w-full rounded border-gray-300 shadow-sm focus:ring-[#2c1a0f] focus:border-[#2c1a0f]"
+                        placeholder="Ceritakan pengalaman Anda..."></textarea>
+                </div>
+
+                <div class="text-right">
+                    <button type="submit"
+                        class="bg-green-600 hover:bg-green-700 text-white font-semibold px-4 py-2 rounded">
+                        Kirim
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <script>
+        function openFeedbackModal(bookingId) {
+            document.getElementById('modal-booking-id').value = bookingId;
+            document.getElementById('feedbackModal').classList.remove('hidden');
+            document.getElementById('feedbackModal').classList.add('flex');
+        }
+
+        function closeFeedbackModal() {
+            document.getElementById('feedbackModal').classList.add('hidden');
+            document.getElementById('feedbackModal').classList.remove('flex');
+        }
+    </script>
+
 
     {{-- Script Pencarian --}}
     <script>
@@ -308,6 +373,9 @@
                 hour: '2-digit',
                 minute: '2-digit'
             });
+            document.getElementById("detailRoomType").textContent = booking.room_type ? booking.room_type.charAt(0)
+                .toUpperCase() + booking.room_type.slice(1) : '-';
+
             document.getElementById("detailDipesan").textContent = createdAt;
 
             document.getElementById("detailStatus").textContent = booking.status;

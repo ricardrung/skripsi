@@ -52,4 +52,9 @@ class Booking extends Model
     {
         return $this->belongsTo(User::class, 'created_by');
     }
+
+    public function feedback()
+    {
+        return $this->hasOne(BookingFeedback::class);
+    }
 }

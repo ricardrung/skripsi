@@ -164,6 +164,39 @@
                                         </select>
                                     </div>
 
+                                    <!-- Tambahkan di bawah dropdown room_type -->
+                                    <div id="second-treatment-container" class="hidden mt-2">
+                                        <label for="second_treatment_id" class="block font-semibold">Pilih Treatment
+                                            Kedua:</label>
+                                        <select name="second_treatment_id" id="second_treatment_id"
+                                            class="w-full p-2 border rounded">
+                                            <option value="">-- Pilih Treatment Kedua --</option>
+                                            @foreach ($allTreatments as $t)
+                                                @if ($t->category_id != 7)
+                                                    <option value="{{ $t->id }}" data-harga="{{ $t->price }}"
+                                                        data-happyhour-price="{{ $t->happy_hour_price ?? $t->price }}"
+                                                        data-room-type="{{ $t->room_type }}">
+                                                        {{ $t->name }} ({{ $t->category->name ?? '-' }})
+                                                    </option>
+                                                @endif
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    {{-- therapist_kedua --}}
+                                    <div id="second-therapist-container" class="hidden">
+                                        <label for="second_therapist_id" class="block font-semibold">Pilih Therapist Kedua
+                                            (Opsional)
+                                            :</label>
+                                        <select id="second_therapist_id" name="second_therapist_id"
+                                            class="w-full p-2 border rounded">
+                                            <option value="">Pilihkan untuk saya</option>
+                                            @foreach ($therapists as $therapist)
+                                                <option value="{{ $therapist->id }}">
+                                                    {{ $therapist->name }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+
 
 
                                     <!-- Pemilihan Therapist -->
@@ -211,6 +244,55 @@
                             </div>
                         </div>
                     @endauth
+
+
+                    {{-- tampilan kedua --}}
+                    <script>
+                        document.getElementById('room_type').addEventListener('change', function() {
+                            const roomType = this.value;
+                            const secondTreatmentSelect = document.getElementById('second_treatment_id');
+
+                            // Tampilkan/hide treatment kedua
+                            const secondTreatmentContainer = document.getElementById('second-treatment-container');
+                            const secondTherapistContainer = document.getElementById('second-therapist-container');
+
+                            if (roomType === 'double') {
+                                secondTreatmentContainer.classList.remove('hidden');
+                                secondTherapistContainer.classList.remove('hidden');
+
+                                // Filter options treatment kedua yang hanya support room_type 'double' atau 'both'
+                                Array.from(secondTreatmentSelect.options).forEach(option => {
+                                    if (option.value === '') {
+                                        // selalu tampilkan opsi default
+                                        option.style.display = '';
+                                        return;
+                                    }
+                                    // Ambil atribut data-room-type, harus kamu tambahkan dulu di blade (lihat bawah)
+                                    const roomTypeOption = option.getAttribute('data-room-type');
+                                    if (roomTypeOption === 'double' || roomTypeOption === 'both') {
+                                        option.style.display = '';
+                                    } else {
+                                        option.style.display = 'none';
+                                    }
+                                });
+
+                                // Reset value jika saat ini tidak valid (hidden)
+                                if (secondTreatmentSelect.selectedOptions.length > 0) {
+                                    const selectedOption = secondTreatmentSelect.selectedOptions[0];
+                                    if (selectedOption.style.display === 'none') {
+                                        secondTreatmentSelect.value = '';
+                                        updateHarga(); // update harga jika treatment kedua berubah
+                                    }
+                                }
+                            } else {
+                                secondTreatmentContainer.classList.add('hidden');
+                                secondTherapistContainer.classList.add('hidden');
+                                secondTreatmentSelect.value = '';
+                                document.getElementById('second_therapist_id').value = '';
+                                updateHarga();
+                            }
+                        });
+                    </script>
 
 
                     <!-- JavaScript untuk Modal -->
@@ -296,12 +378,49 @@
 
                         function updateHarga() {
                             const hargaText = document.getElementById("harga");
-
                             const modal = document.getElementById("bookingModal");
-                            const hargaNormal = parseInt(modal.getAttribute("data-harga"));
 
-                            hargaText.textContent = "Rp" + hargaNormal.toLocaleString();
+                            const hargaNormal = parseInt(modal.getAttribute("data-harga")) || 0;
+
+                            let total = hargaNormal;
+
+                            const secondSelect = document.getElementById("second_treatment_id");
+                            const selectedOption = secondSelect.options[secondSelect.selectedIndex];
+                            const secondTreatmentId = secondSelect.value;
+
+                            // Ambil tanggal dan jam untuk cek happy hour
+                            const bookingDate = document.getElementById('booking_date').value;
+                            const bookingTime = document.getElementById('booking_time').value;
+
+                            const isHappyHourTime = () => {
+                                if (!bookingDate || !bookingTime) return false;
+                                const dateObj = new Date(`${bookingDate}T${bookingTime}`);
+                                const day = dateObj.getDay(); // 0=minggu,1=senin,...5=jumat
+                                const hour = dateObj.getHours();
+
+                                // Senin sampai Jumat (1-5), jam 10-13
+                                return day >= 1 && day <= 5 && hour >= 10 && hour < 13;
+                            };
+
+                            if (secondTreatmentId) {
+                                let hargaKedua = parseInt(selectedOption.getAttribute('data-harga')) || 0;
+                                let hargaHappyHourKedua = parseInt(selectedOption.getAttribute('data-happyhour-price')) || hargaKedua;
+
+                                if (isHappyHourTime()) {
+                                    hargaKedua = hargaHappyHourKedua;
+                                }
+
+                                total += hargaKedua;
+                            }
+
+                            hargaText.textContent = "Rp " + total.toLocaleString('id-ID');
                         }
+
+                        document.getElementById("second_treatment_id").addEventListener("change", updateHarga);
+
+
+
+
 
                         document.getElementById("booking_date").addEventListener("change", updateJam);
 
@@ -343,6 +462,49 @@
 
                         document.getElementById('booking_time').addEventListener('change', fetchAvailableTherapists);
                         document.getElementById('treatment_id').addEventListener('change', fetchAvailableTherapists);
+
+
+                        // therapist kedua 
+                        function fetchAvailableTherapistsSecondTreatment() {
+                            const tanggal = document.getElementById('booking_date').value;
+                            const jam = document.getElementById('booking_time').value;
+                            const treatmentId = document.getElementById('second_treatment_id').value;
+                            const firstTherapistId = document.getElementById('therapist_id').value;
+
+
+                            if (!tanggal || !jam || !treatmentId) return;
+
+                            fetch(
+                                    `/api/available-therapists-second?tanggal=${tanggal}&jam=${jam}&treatment_id=${treatmentId}&first_therapist_id=${firstTherapistId}`
+                                )
+                                .then(response => response.json())
+                                .then(data => {
+                                    const therapistSelect = document.getElementById('second_therapist_id');
+                                    therapistSelect.innerHTML = '<option value="">Pilihkan untuk saya</option>';
+
+                                    if (!data.therapists || data.therapists.length === 0) {
+                                        const opt = document.createElement('option');
+                                        opt.disabled = true;
+                                        opt.textContent = 'Tidak ada therapist tersedia';
+                                        therapistSelect.appendChild(opt);
+                                    } else {
+                                        data.therapists.forEach(therapist => {
+                                            const opt = document.createElement('option');
+                                            opt.value = therapist.id;
+                                            opt.textContent = therapist.name;
+                                            therapistSelect.appendChild(opt);
+                                        });
+                                    }
+                                })
+                                .catch(err => console.error('Gagal memuat therapist kedua:', err));
+                        }
+
+
+                        // Event listener supaya dropdown therapist kedua update saat:
+                        document.getElementById('second_treatment_id').addEventListener('change', fetchAvailableTherapistsSecondTreatment);
+                        document.getElementById('therapist_id').addEventListener('change', fetchAvailableTherapistsSecondTreatment);
+                        document.getElementById('booking_date').addEventListener('change', fetchAvailableTherapistsSecondTreatment);
+                        document.getElementById('booking_time').addEventListener('change', fetchAvailableTherapistsSecondTreatment);
                     </script>
                 </div>
             </div>
