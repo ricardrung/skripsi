@@ -6,6 +6,7 @@
         </div>
     </header>
 
+
     <section class="py-16">
         <div class="container mx-auto px-4 text-center">
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -46,6 +47,9 @@
                         <div class="p-6">
 
                             @php
+                                $userMembership = Auth::user()?->userMembership;
+                                $membership = $userMembership?->membership;
+
                                 $originalPrice = $treatment->price;
                                 $discount = Auth::check()
                                     ? $membershipService->getUserDiscount(
@@ -56,15 +60,13 @@
                                 $finalPrice =
                                     $discount > 0 ? floor($originalPrice * (1 - $discount / 100)) : $originalPrice;
                             @endphp
-                            <pre class="text-sm text-red-600 text-left">
-USER: {{ Auth::user()->name ?? 'Guest' }}
-Membership: {{ Auth::user()->membership?->name ?? '-' }}
-Scope: {{ Auth::user()->membership?->applies_to ?? '-' }}
+                            <pre>
+USER: {{ Auth::user()->name ?? '-' }}
+Membership: {{ $userMembership?->membership?->name ?? '-' }}
+Scope: {{ $userMembership?->membership?->applies_to ?? '-' }}
 Category: {{ $treatment->category->name ?? '-' }}
 Diskon: {{ $discount }}%
 </pre>
-
-
 
                             <h3 class="text-2xl font-semibold text-[#2c1a0f]">{{ $treatment->name }}</h3>
                             <p class="text-gray-700 my-2">{{ $treatment->description }}</p>
@@ -140,6 +142,8 @@ Diskon: {{ $discount }}%
                                 <input type="hidden" id="user_membership_level"
                                     value="{{ auth()->user()->membership->level ?? 'classic' }}">
                                 <input type="hidden" id="treatment_category" value="">
+                                <input type="hidden" id="membership_scope"
+                                    value="{{ auth()->user()->userMembership?->membership?->applies_to ?? '' }}">
 
                                 <!-- Nama -->
                                 <div>
@@ -217,7 +221,8 @@ Diskon: {{ $discount }}%
                                             @if ($t->category_id != 7)
                                                 <option value="{{ $t->id }}" data-harga="{{ $t->price }}"
                                                     data-happyhour-price="{{ $t->happy_hour_price ?? $t->price }}"
-                                                    data-room-type="{{ $t->room_type }}">
+                                                    data-room-type="{{ $t->room_type }}"
+                                                    data-category="{{ $t->category->name ?? '' }}">
                                                     {{ $t->name }} ({{ $t->category->name ?? '-' }})
                                                 </option>
                                             @endif
@@ -348,7 +353,7 @@ Diskon: {{ $discount }}%
                         document.getElementById("bookingModal").setAttribute("data-harga-normal", hargaNormal);
                         document.getElementById("bookingModal").setAttribute("data-harga-happy-hour", hargaHappyHour);
                         document.getElementById("bookingModal").setAttribute("data-diskon-member", diskonMember);
-
+                        document.getElementById("bookingModal").setAttribute("data-category", category);
 
                         setMinDate();
                         updateJam();
@@ -425,7 +430,13 @@ Diskon: {{ $discount }}%
                         const tanggal = document.getElementById("booking_date").value;
                         const jamSelect = document.getElementById("booking_time").value;
 
-                        let hargaFinal = isHappyHour(tanggal, jamSelect) ? hargaHappyHour : hargaNormal;
+                        // Hitung harga treatment pertama
+                        let hargaTreatmentPertama = isHappyHour(tanggal, jamSelect) ? hargaHappyHour : hargaNormal;
+
+                        // Terapkan diskon untuk treatment pertama (karena sudah dipastikan sesuai scope)
+                        const hargaTreatmentPertamaSetelahDiskon = hargaTreatmentPertama - (hargaTreatmentPertama * diskonMember / 100);
+
+                        let totalHarga = hargaTreatmentPertamaSetelahDiskon;
 
                         // Tambahkan harga treatment kedua jika dipilih
                         const secondTreatmentSelect = document.getElementById("second_treatment_id");
@@ -436,18 +447,64 @@ Diskon: {{ $discount }}%
                             const secondHargaHappy = parseInt(secondTreatmentOption.getAttribute('data-happyhour-price')) ||
                                 secondHargaNormal;
 
-                            if (isHappyHour(tanggal, jamSelect)) {
-                                hargaFinal += secondHargaHappy;
-                            } else {
-                                hargaFinal += secondHargaNormal;
+                            // Hitung harga treatment kedua
+                            let hargaTreatmentKedua = isHappyHour(tanggal, jamSelect) ? secondHargaHappy : secondHargaNormal;
+
+                            // Cek apakah treatment kedua mendapat diskon
+                            // Anda perlu menambahkan data-category pada option treatment kedua
+                            const secondTreatmentCategory = secondTreatmentOption.getAttribute('data-category');
+
+                            // Dapatkan scope membership dari user (perlu ditambahkan sebagai hidden input atau data attribute)
+                            const membershipScope = document.getElementById('membership_scope')?.value || '';
+
+                            // Terapkan diskon hanya jika kategori treatment kedua sesuai dengan scope membership
+                            if (membershipScope && secondTreatmentCategory &&
+                                (membershipScope.toLowerCase() === 'all' ||
+                                    membershipScope.toLowerCase().includes(secondTreatmentCategory.toLowerCase()))) {
+                                hargaTreatmentKedua = hargaTreatmentKedua - (hargaTreatmentKedua * diskonMember / 100);
                             }
+
+                            totalHarga += hargaTreatmentKedua;
                         }
 
-                        // Hitung diskon dari membership
-                        const hargaSetelahDiskon = hargaFinal - (hargaFinal * diskonMember / 100);
-
-                        hargaText.textContent = "Rp" + Math.round(hargaSetelahDiskon).toLocaleString();
+                        hargaText.textContent = "Rp" + Math.round(totalHarga).toLocaleString();
                     }
+
+                    // Perbarui harga berdasarkan tanggal dan jam yang dipilih
+                    // function updateHarga() {
+                    //     const hargaText = document.getElementById("harga");
+
+                    //     const modal = document.getElementById("bookingModal");
+                    //     const hargaNormal = parseInt(modal.getAttribute("data-harga-normal")) || 0;
+                    //     const hargaHappyHour = parseInt(modal.getAttribute("data-harga-happy-hour")) || 0;
+                    //     const diskonMember = parseInt(modal.getAttribute("data-diskon-member")) || 0;
+
+                    //     const tanggal = document.getElementById("booking_date").value;
+                    //     const jamSelect = document.getElementById("booking_time").value;
+
+                    //     let hargaFinal = isHappyHour(tanggal, jamSelect) ? hargaHappyHour : hargaNormal;
+
+                    //     // Tambahkan harga treatment kedua jika dipilih
+                    //     const secondTreatmentSelect = document.getElementById("second_treatment_id");
+                    //     const secondTreatmentOption = secondTreatmentSelect.options[secondTreatmentSelect.selectedIndex];
+
+                    //     if (secondTreatmentOption && secondTreatmentOption.value !== '') {
+                    //         const secondHargaNormal = parseInt(secondTreatmentOption.getAttribute('data-harga')) || 0;
+                    //         const secondHargaHappy = parseInt(secondTreatmentOption.getAttribute('data-happyhour-price')) ||
+                    //             secondHargaNormal;
+
+                    //         if (isHappyHour(tanggal, jamSelect)) {
+                    //             hargaFinal += secondHargaHappy;
+                    //         } else {
+                    //             hargaFinal += secondHargaNormal;
+                    //         }
+                    //     }
+
+                    //     // Hitung diskon dari membership
+                    //     const hargaSetelahDiskon = hargaFinal - (hargaFinal * diskonMember / 100);
+
+                    //     hargaText.textContent = "Rp" + Math.round(hargaSetelahDiskon).toLocaleString();
+                    // }
                     document.getElementById('second_treatment_id').addEventListener('change', updateHarga);
 
                     // Cek apakah Happy Hour berlaku (hanya berlaku di jam 13:00 - 14:30)

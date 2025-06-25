@@ -64,7 +64,7 @@ public function index(Request $request)
     
 
 
-    $bookings = $query->orderBy('booking_date', 'desc')->paginate(10);
+    $bookings = $query->orderBy('created_at', 'desc')->paginate(10);
 
     // Kalau butuh kategori untuk dropdown kategori (meskipun tidak terlihat di Blade kamu sekarang)
     $categories = \App\Models\TreatmentCategory::pluck('name', 'id');
@@ -94,7 +94,7 @@ public function storeCustomer(Request $request)
         'booking_time' => 'required',
         'therapist_id' => 'nullable|exists:users,id',
         'payment_method' => 'required|in:cash,gateway',
-        'room_type' => 'required|in:single,double',
+        'room_type' => 'required|in:single,double,hair',
     ]);
 
     //waktu
@@ -119,7 +119,7 @@ public function storeCustomer(Request $request)
         $availableTherapists = User::where('role', 'therapist')->whereIn('availability', ['tersedia', 'sedang menangani'])->get()->filter(function ($therapist) use ($request, $startTime, $endTime) {
             return !Booking::where('therapist_id', $therapist->id)
                 ->where('booking_date', $request->booking_date)
-                ->where('status', '!=', 'batal')
+               ->whereIn('status', ['menunggu', 'sedang'])
                 ->where(function ($query) use ($startTime, $endTime) {
                     $query->whereBetween('booking_time', [$startTime, $endTime->copy()->subMinute()])
                           ->orWhereRaw('? BETWEEN booking_time AND ADDTIME(booking_time, SEC_TO_TIME(duration_minutes * 60))', [$startTime->format('H:i:s')]);
@@ -142,7 +142,7 @@ public function storeCustomer(Request $request)
     } else {
         $isOverlap = Booking::where('therapist_id', $request->therapist_id)
             ->where('booking_date', $request->booking_date)
-            ->where('status', '!=', 'batal')
+          ->whereIn('status', ['menunggu', 'sedang'])
             ->where(function ($query) use ($startTime, $endTime) {
                 $query->whereBetween('booking_time', [$startTime, $endTime->copy()->subMinute()])
                       ->orWhereRaw('? BETWEEN booking_time AND ADDTIME(booking_time, SEC_TO_TIME(duration_minutes * 60))', [$startTime->format('H:i:s')]);
@@ -199,7 +199,7 @@ public function storeCustomer(Request $request)
     // 2. Ambil kapasitas maksimal ruangan dari spa_rooms
     $maxCapacity = \App\Models\SpaRoom::where('room_type', $roomType)->sum('capacity');
 
-    // 3. Hitung jumlah booking yang sudah dilakukan pada waktu yang sama
+    // 3. Hitung jumlah booking yang sudah dilakukan pada waktu yang sama(ruangan)
     $existingBookingCount = \App\Models\Booking::where('booking_date', $request->booking_date)
         ->where('booking_time', $request->booking_time)
         ->where('room_type', $roomType) 
@@ -214,7 +214,7 @@ public function storeCustomer(Request $request)
         return back()->with('error', 'Maaf, semua ruangan untuk treatment ini penuh pada waktu tersebut.');
     }
     // Validasi tambahan jika treatment tidak cocok dengan room_type yang dipilih user
-    if (!in_array($request->room_type, ['single', 'double'])) {
+    if (!in_array($request->room_type, ['single', 'double', 'hair'])) {
         return back()->with('error', 'Tipe ruangan tidak valid.');
     }
 
@@ -299,7 +299,7 @@ $createdBookingIds = [];
             ->filter(function ($therapist) use ($request, $startTime, $endTime) {
                 return !Booking::where('therapist_id', $therapist->id)
                     ->where('booking_date', $request->booking_date)
-                    ->where('status', '!=', 'batal')
+                    ->whereIn('status', ['menunggu', 'sedang'])
                     ->where(function ($query) use ($startTime, $endTime) {
                         $query->whereBetween('booking_time', [$startTime, $endTime->copy()->subMinute()])
                               ->orWhereRaw('? BETWEEN booking_time AND ADDTIME(booking_time, SEC_TO_TIME(duration_minutes * 60))', [$startTime->format('H:i:s')]);
@@ -532,7 +532,7 @@ public function storeAdmin(Request $request)
         'user_id' => 'nullable|exists:users,id',
         'guest_name' => 'nullable|string',
         'guest_phone' => 'nullable|string',
-        'room_type' => 'required|in:single,double',
+        'room_type' => 'required|in:single,double,hair',
         'second_treatment_id' => 'nullable|exists:treatments,id',
         'second_therapist_id' => 'nullable|exists:users,id',
         'is_promo_reward' => 'nullable|boolean',
@@ -562,7 +562,7 @@ public function storeAdmin(Request $request)
         $availableTherapists = User::where('role', 'therapist')->whereIn('availability', ['tersedia', 'sedang menangani'])->get()->filter(function ($therapist) use ($request, $startTime, $endTime) {
             return !Booking::where('therapist_id', $therapist->id)
                 ->where('booking_date', $request->booking_date)
-                ->where('status', '!=', 'batal')
+               ->whereIn('status', ['menunggu', 'sedang'])
                 ->where(function ($query) use ($startTime, $endTime) {
                     $query->whereBetween('booking_time', [$startTime, $endTime->copy()->subMinute()])
                           ->orWhereRaw('? BETWEEN booking_time AND ADDTIME(booking_time, SEC_TO_TIME(duration_minutes * 60))', [$startTime->format('H:i:s')]);
@@ -587,7 +587,7 @@ public function storeAdmin(Request $request)
     // Validasi bentrok
     $isOverlap = Booking::where('therapist_id', $request->therapist_id)
         ->where('booking_date', $request->booking_date)
-        ->where('status', '!=', 'batal')
+       ->whereIn('status', ['menunggu', 'sedang'])
         ->where(function ($query) use ($startTime, $endTime) {
             $query->whereBetween('booking_time', [$startTime, $endTime->copy()->subMinute()])
                   ->orWhereRaw('? BETWEEN booking_time AND ADDTIME(booking_time, SEC_TO_TIME(duration_minutes * 60))', [$startTime->format('H:i:s')]);
@@ -665,7 +665,7 @@ public function storeAdmin(Request $request)
                     ->filter(function ($therapist) use ($request, $startTime, $endTime) {
                         return !Booking::where('therapist_id', $therapist->id)
                             ->where('booking_date', $request->booking_date)
-                            ->where('status', '!=', 'batal')
+                           ->whereIn('status', ['menunggu', 'sedang']) 
                             ->where(function ($query) use ($startTime, $endTime) {
                                 $query->whereBetween('booking_time', [$startTime, $endTime->copy()->subMinute()])
                                       ->orWhereRaw('? BETWEEN booking_time AND ADDTIME(booking_time, SEC_TO_TIME(duration_minutes * 60))', [$startTime->format('H:i:s')]);
@@ -746,7 +746,7 @@ public function getAvailableTherapists(Request $request)
     $therapists = User::where('role', 'therapist')->whereIn('availability', ['tersedia', 'sedang menangani'])->get()->filter(function ($therapist) use ($tanggal, $startTime, $endTime) {
         return !Booking::where('therapist_id', $therapist->id)
             ->where('booking_date', $tanggal)
-            ->where('status', '!=', 'batal')
+           ->whereIn('status', ['menunggu', 'sedang']) 
             ->where(function ($query) use ($startTime, $endTime) {
                 $query->whereBetween('booking_time', [$startTime, $endTime->copy()->subMinute()])
                       ->orWhereRaw('? BETWEEN booking_time AND ADDTIME(booking_time, SEC_TO_TIME(duration_minutes * 60))', [$startTime->format('H:i:s')]);
@@ -792,7 +792,8 @@ public function riwayatCustomer(Request $request)
     }
 
     $order = $request->input('order', 'desc');
-    $query->orderBy('booking_date', $order)->orderBy('booking_time', $order);
+   $query->orderBy('created_at', $order);
+
 
     $bookings = $query->paginate(8)->appends(request()->query());
 
@@ -983,7 +984,7 @@ public function getAvailableTherapistsForSecondTreatment(Request $request)
 
         $hasBooking = Booking::where('therapist_id', $therapist->id)
             ->where('booking_date', $tanggal)
-            ->where('status', '!=', 'batal')
+         ->whereIn('status', ['menunggu', 'sedang']) 
             ->where(function ($query) use ($startTime, $endTime) {
                 $query->whereBetween('booking_time', [$startTime, $endTime->copy()->subMinute()])
                       ->orWhereRaw('? BETWEEN booking_time AND ADDTIME(booking_time, SEC_TO_TIME(duration_minutes * 60))', [$startTime->format('H:i:s')]);

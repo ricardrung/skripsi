@@ -111,6 +111,7 @@
                 <select name="room_type" id="room_type" class="w-full p-2 border rounded" required>
                     <option value="single">Single</option>
                     <option value="double">Double</option>
+                    <option value="hair">Hair</option>
                 </select>
             </div>
 

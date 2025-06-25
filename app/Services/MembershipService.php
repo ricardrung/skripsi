@@ -86,7 +86,7 @@ class MembershipService
 
     
         // Normalisasi string
-        $scope = Str::lower(trim($membership->category_scope));
+        $scope = Str::lower(trim($membership->applies_to));
         $category = Str::lower(trim($treatmentCategory));
 
         if ($scope === 'all' || $scope === $category) {

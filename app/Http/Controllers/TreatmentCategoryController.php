@@ -39,28 +39,7 @@ public function bodyTreatmentPage()
         ->where('availability', 'tersedia')
         ->get();
 
-    $user = Auth::user();
-    $membership = null;
-    if ($user) {
-        $membership = app(\App\Services\MembershipService::class)
-            ->getCurrentMembership($user);
-
-        foreach ($treatments as $treatment) {
-            $categoryName = $treatment->category->name ?? '';
-            $discount = app(\App\Services\MembershipService::class)
-                ->getUserDiscount($user, $categoryName);
-            
-            $treatment->discount = $discount;
-            $treatment->final_price = $discount > 0
-                ? $treatment->price - (($discount / 100) * $treatment->price)
-                : $treatment->price;
-        }
-    } else {
-        foreach ($treatments as $treatment) {
-            $treatment->discount = 0;
-            $treatment->final_price = $treatment->price;
-        }
-    }
+    $membership = Auth::check() ? Auth::user()->membership : null;
     return view('pages.kategori.bodytreatment', compact('treatments', 'therapists', 'allTreatments', 'membership'));
 }
 

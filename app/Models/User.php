@@ -80,6 +80,10 @@ class User extends Authenticatable
             ->with('membership');
     }
 
+    public function userMembership()
+{
+    return $this->hasOne(UserMembership::class);
+}
 
 
     

@@ -154,6 +154,7 @@
                         <option value="single">Single</option>
                         <option value="double">Double</option>
                         <option value="both">Bisa Single & Double</option>
+                        <option value="hair">Hair</option>
                     </select>
 
 

@@ -8,6 +8,11 @@
     <section class="py-16">
         <div class="container mx-auto px-4 text-center">
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                @php
+                    use App\Services\MembershipService;
+
+                    $membershipService = app(MembershipService::class);
+                @endphp
 
                 <!-- Card Paket Spa Signature Package -->
                 @foreach ($treatments as $treatment)
@@ -40,11 +45,40 @@
                             @endif
                         @endif
                         <div class="p-6">
+                            @php
+                                $userMembership = Auth::user()?->userMembership;
+                                $membership = $userMembership?->membership;
+
+                                $originalPrice = $treatment->price;
+                                $discount = Auth::check()
+                                    ? $membershipService->getUserDiscount(
+                                        Auth::user(),
+                                        $treatment->category->name ?? '',
+                                    )
+                                    : 0;
+                                $finalPrice =
+                                    $discount > 0 ? floor($originalPrice * (1 - $discount / 100)) : $originalPrice;
+                            @endphp
+                            <pre>
+USER: {{ Auth::user()->name ?? '-' }}
+Membership: {{ $userMembership?->membership?->name ?? '-' }}
+Scope: {{ $userMembership?->membership?->applies_to ?? '-' }}
+Category: {{ $treatment->category->name ?? '-' }}
+Diskon: {{ $discount }}%
+</pre>
                             <h3 class="text-2xl font-semibold text-[#2c1a0f]">{{ $treatment->name }}</h3>
                             <p class="text-gray-700 my-2">{{ $treatment->description }}</p>
 
-                            <span class="block text-lg font-bold text-[#8b5a2b]">Rp
-                                {{ number_format($treatment->price, 0, ',', '.') }}</span>
+                            @if ($finalPrice < $originalPrice)
+                                <span class="text-sm line-through text-gray-500">Rp
+                                    {{ number_format($originalPrice, 0, ',', '.') }}</span>
+                                <span class="block text-lg font-bold text-[#8b5a2b]">Rp
+                                    {{ number_format($finalPrice, 0, ',', '.') }}</span>
+                                <p class="text-green-600 text-sm font-semibold">Diskon Member: {{ $discount }}%</p>
+                            @else
+                                <span class="block text-lg font-bold text-[#8b5a2b]">Rp
+                                    {{ number_format($originalPrice, 0, ',', '.') }}</span>
+                            @endif
 
                             @if ($treatment->happy_hour_price)
                                 <div class="mt-2 p-3 bg-yellow-50 border-l-4 border-yellow-500 text-yellow-800 rounded-md">
@@ -59,7 +93,7 @@
 
                             @auth
                                 <button
-                                    onclick="openModal('{{ $treatment->name }}', '{{ $treatment->description }}', {{ $treatment->price }}, {{ $treatment->happy_hour_price ?? 0 }}, {{ $treatment->id }})"
+                                    onclick="openModal('{{ $treatment->name }}', '{{ $treatment->description }}', {{ $treatment->price }}, {{ $treatment->happy_hour_price ?? 0 }}, {{ $treatment->id }}, '{{ $treatment->category->name ?? '' }}', {{ $discount }})"
                                     class="mt-4 inline-block bg-[#8b5a2b] text-white px-4 py-2 rounded-lg hover:bg-[#6b4223] transition">
                                     Booking
                                 </button>
@@ -100,6 +134,11 @@
                                 <!-- Hidden Treatment ID -->
                                 <input type="hidden" id="treatment_id" name="treatment_id">
                                 <input type="hidden" name="user_id" value="{{ auth()->id() }}">
+                                <input type="hidden" id="user_membership_level"
+                                    value="{{ auth()->user()->membership->level ?? 'classic' }}">
+                                <input type="hidden" id="treatment_category" value="">
+                                <input type="hidden" id="membership_scope"
+                                    value="{{ auth()->user()->userMembership?->membership?->applies_to ?? '' }}">
 
                                 <!-- Nama -->
                                 <div>
@@ -174,7 +213,8 @@
                                             @if ($t->category_id != 7)
                                                 <option value="{{ $t->id }}" data-harga="{{ $t->price }}"
                                                     data-happyhour-price="{{ $t->happy_hour_price ?? $t->price }}"
-                                                    data-room-type="{{ $t->room_type }}">
+                                                    data-room-type="{{ $t->room_type }}"
+                                                    data-category="{{ $t->category->name ?? '' }}">
                                                     {{ $t->name }} ({{ $t->category->name ?? '-' }})
                                                 </option>
                                             @endif
@@ -294,7 +334,7 @@
                         updateJam();
                     });
 
-                    function openModal(namaPaket, deskripsiPaket, hargaNormal, hargaHappyHour, treatmentId) {
+                    function openModal(namaPaket, deskripsiPaket, hargaNormal, hargaHappyHour, treatmentId, category, diskonMember) {
                         document.getElementById("bookingModal").classList.remove("hidden");
 
                         // Set paket spa yang dipilih di dalam form
@@ -304,11 +344,14 @@
                         // Simpan harga dalam elemen modal
                         document.getElementById("bookingModal").setAttribute("data-harga-normal", hargaNormal);
                         document.getElementById("bookingModal").setAttribute("data-harga-happy-hour", hargaHappyHour);
+                        document.getElementById("bookingModal").setAttribute("data-diskon-member", diskonMember);
+                        document.getElementById("bookingModal").setAttribute("data-category", category);
 
                         setMinDate();
                         updateJam();
-                        updateHarga(); // Perbarui harga saat modal dibuka
+                        updateHarga();
                     }
+
 
 
                     function closeModal() {
@@ -375,11 +418,18 @@
                         const modal = document.getElementById("bookingModal");
                         const hargaNormal = parseInt(modal.getAttribute("data-harga-normal")) || 0;
                         const hargaHappyHour = parseInt(modal.getAttribute("data-harga-happy-hour")) || 0;
+                        const diskonMember = parseInt(modal.getAttribute("data-diskon-member")) || 0;
 
                         const tanggal = document.getElementById("booking_date").value;
                         const jamSelect = document.getElementById("booking_time").value;
 
-                        let hargaFinal = isHappyHour(tanggal, jamSelect) ? hargaHappyHour : hargaNormal;
+                        // Hitung harga treatment pertama
+                        let hargaTreatmentPertama = isHappyHour(tanggal, jamSelect) ? hargaHappyHour : hargaNormal;
+
+                        // Terapkan diskon untuk treatment pertama (karena sudah dipastikan sesuai scope)
+                        const hargaTreatmentPertamaSetelahDiskon = hargaTreatmentPertama - (hargaTreatmentPertama * diskonMember / 100);
+
+                        let totalHarga = hargaTreatmentPertamaSetelahDiskon;
 
                         // Tambahkan harga treatment kedua jika dipilih
                         const secondTreatmentSelect = document.getElementById("second_treatment_id");
@@ -390,15 +440,29 @@
                             const secondHargaHappy = parseInt(secondTreatmentOption.getAttribute('data-happyhour-price')) ||
                                 secondHargaNormal;
 
-                            if (isHappyHour(tanggal, jamSelect)) {
-                                hargaFinal += secondHargaHappy;
-                            } else {
-                                hargaFinal += secondHargaNormal;
+                            // Hitung harga treatment kedua
+                            let hargaTreatmentKedua = isHappyHour(tanggal, jamSelect) ? secondHargaHappy : secondHargaNormal;
+
+                            // Cek apakah treatment kedua mendapat diskon
+                            // Anda perlu menambahkan data-category pada option treatment kedua
+                            const secondTreatmentCategory = secondTreatmentOption.getAttribute('data-category');
+
+                            // Dapatkan scope membership dari user (perlu ditambahkan sebagai hidden input atau data attribute)
+                            const membershipScope = document.getElementById('membership_scope')?.value || '';
+
+                            // Terapkan diskon hanya jika kategori treatment kedua sesuai dengan scope membership
+                            if (membershipScope && secondTreatmentCategory &&
+                                (membershipScope.toLowerCase() === 'all' ||
+                                    membershipScope.toLowerCase().includes(secondTreatmentCategory.toLowerCase()))) {
+                                hargaTreatmentKedua = hargaTreatmentKedua - (hargaTreatmentKedua * diskonMember / 100);
                             }
+
+                            totalHarga += hargaTreatmentKedua;
                         }
 
-                        hargaText.textContent = "Rp" + hargaFinal.toLocaleString();
+                        hargaText.textContent = "Rp" + Math.round(totalHarga).toLocaleString();
                     }
+
                     document.getElementById('second_treatment_id').addEventListener('change', updateHarga);
 
 

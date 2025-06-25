@@ -8,6 +8,11 @@
     <section class="py-16 ">
         <div class="container mx-auto px-4 text-center">
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 ">
+                @php
+                    use App\Services\MembershipService;
+
+                    $membershipService = app(MembershipService::class);
+                @endphp
 
                 <!-- Card Paket Spa -->
                 @foreach ($treatments as $treatment)
@@ -41,15 +46,44 @@
                         @endif
 
                         <div class="p-6">
+                            @php
+                                $userMembership = Auth::user()?->userMembership;
+                                $membership = $userMembership?->membership;
+
+                                $originalPrice = $treatment->price;
+                                $discount = Auth::check()
+                                    ? $membershipService->getUserDiscount(
+                                        Auth::user(),
+                                        $treatment->category->name ?? '',
+                                    )
+                                    : 0;
+                                $finalPrice =
+                                    $discount > 0 ? floor($originalPrice * (1 - $discount / 100)) : $originalPrice;
+                            @endphp
+                            <pre>
+USER: {{ Auth::user()->name ?? '-' }}
+Membership: {{ $userMembership?->membership?->name ?? '-' }}
+Scope: {{ $userMembership?->membership?->applies_to ?? '-' }}
+Category: {{ $treatment->category->name ?? '-' }}
+Diskon: {{ $discount }}%
+</pre>
                             <h3 class="text-2xl font-semibold text-[#2c1a0f]">{{ $treatment->name }}</h3>
                             <p class="text-gray-700 my-2">{{ $treatment->description }}</p>
-                            <span class="block text-lg font-bold text-[#8b5a2b]">
-                                Rp {{ number_format($treatment->price, 0, ',', '.') }}
-                            </span>
+                            @if ($finalPrice < $originalPrice)
+                                <span class="text-sm line-through text-gray-500">Rp
+                                    {{ number_format($originalPrice, 0, ',', '.') }}</span>
+                                <span class="block text-lg font-bold text-[#8b5a2b]">Rp
+                                    {{ number_format($finalPrice, 0, ',', '.') }}</span>
+                                <p class="text-green-600 text-sm font-semibold">Diskon Member: {{ $discount }}%</p>
+                            @else
+                                <span class="block text-lg font-bold text-[#8b5a2b]">Rp
+                                    {{ number_format($originalPrice, 0, ',', '.') }}</span>
+                            @endif
+
 
                             @auth
                                 <button
-                                    onclick="openModal('{{ $treatment->name }}', '{{ $treatment->description }}', {{ $treatment->price }},{{ $treatment->duration_minutes }}, {{ $treatment->id }})"
+                                    onclick="openModal('{{ $treatment->name }}', '{{ $treatment->description }}', {{ $treatment->price }},{{ $treatment->duration_minutes }}, {{ $treatment->id }},  '{{ $treatment->category->name ?? '' }}', {{ $discount }})"
                                     class="mt-4 inline-block bg-[#8b5a2b] text-white px-4 py-2 rounded-lg hover:bg-[#6b4223] transition">
                                     Booking
                                 </button>
@@ -149,7 +183,8 @@
                                             @if ($t->category_id != 7)
                                                 <option value="{{ $t->id }}" data-harga="{{ $t->price }}"
                                                     data-happyhour-price="{{ $t->happy_hour_price ?? $t->price }}"
-                                                    data-room-type="{{ $t->room_type }}">
+                                                    data-room-type="{{ $t->room_type }}"
+                                                    data-category="{{ $t->category->name ?? '' }}">
                                                     {{ $t->name }} ({{ $t->category->name ?? '-' }})
                                                 </option>
                                             @endif
@@ -269,16 +304,20 @@
                         setMinDate();
                     });
 
-                    function openModal(namaPaket, deskripsiPaket, harga, durasi, treatmentId) {
-                        document.getElementById("bookingModal").classList.remove("hidden");
+                    function openModal(namaPaket, deskripsiPaket, harga, durasi, treatmentId, category, diskonMember) {
+                        const modal = document.getElementById("bookingModal");
+                        modal.classList.remove("hidden");
 
                         // Set paket spa yang dipilih di dalam form
                         document.getElementById("treatment_name_display").value = namaPaket + " - " + deskripsiPaket;
                         document.getElementById("treatment_id").value = treatmentId;
 
                         // Simpan harga dan durasi dalam elemen modal
-                        document.getElementById("bookingModal").setAttribute("data-harga", harga);
-                        document.getElementById("bookingModal").setAttribute("data-durasi", durasi); // Menyimpan durasi
+
+                        modal.setAttribute("data-harga", harga);
+                        modal.setAttribute("data-durasi", durasi);
+                        modal.setAttribute("data-diskon-member", diskonMember);
+                        modal.setAttribute("data-category", category);
 
                         setMinDate();
                         updateJam(durasi); // Pastikan durasi sudah terisi
@@ -361,42 +400,53 @@
 
                     function updateHarga() {
                         const hargaText = document.getElementById("harga");
-
                         const modal = document.getElementById("bookingModal");
-                        const hargaNormal = parseInt(modal.getAttribute("data-harga"));
 
-                        let total = hargaNormal; // ✅ Inisialisasi total
+                        const hargaNormal = parseInt(modal.getAttribute("data-harga")) || 0;
+                        const diskonMember = parseInt(modal.getAttribute("data-diskon-member")) || 0;
+                        const category = modal.getAttribute("data-category") || '';
+                        const scope = "{{ auth()->user()?->userMembership?->membership?->applies_to ?? '' }}".toLowerCase();
+
+                        let hargaFinal = hargaNormal;
+
+                        if (diskonMember > 0 && (scope === 'all' || scope.includes(category.toLowerCase()))) {
+                            hargaFinal = hargaFinal - (hargaFinal * diskonMember / 100);
+                        }
+
+                        let total = hargaFinal;
 
                         const secondSelect = document.getElementById("second_treatment_id");
                         const selectedOption = secondSelect.options[secondSelect.selectedIndex];
                         const secondTreatmentId = secondSelect.value;
 
-                        // Ambil tanggal dan jam untuk cek happy hour
                         const bookingDate = document.getElementById('booking_date').value;
                         const bookingTime = document.getElementById('booking_time').value;
 
                         const isHappyHourTime = () => {
                             if (!bookingDate || !bookingTime) return false;
                             const dateObj = new Date(`${bookingDate}T${bookingTime}`);
-                            const day = dateObj.getDay(); // 0=minggu,1=senin,...5=jumat
+                            const day = dateObj.getDay();
                             const hour = dateObj.getHours();
-
-                            // Senin sampai Jumat (1-5), jam 10-13
                             return day >= 1 && day <= 5 && hour >= 10 && hour < 13;
                         };
 
                         if (secondTreatmentId) {
                             let hargaKedua = parseInt(selectedOption.getAttribute('data-harga')) || 0;
                             let hargaHappyHourKedua = parseInt(selectedOption.getAttribute('data-happyhour-price')) || hargaKedua;
+                            const secondCategory = selectedOption.getAttribute('data-category') || '';
 
                             if (isHappyHourTime()) {
                                 hargaKedua = hargaHappyHourKedua;
                             }
 
+                            if (diskonMember > 0 && (scope === 'all' || scope.includes(secondCategory.toLowerCase()))) {
+                                hargaKedua = hargaKedua - (hargaKedua * diskonMember / 100);
+                            }
+
                             total += hargaKedua;
                         }
 
-                        hargaText.textContent = "Rp " + total.toLocaleString();
+                        hargaText.textContent = "Rp " + Math.round(total).toLocaleString('id-ID');
                     }
 
                     document.getElementById("second_treatment_id").addEventListener("change", updateHarga);
