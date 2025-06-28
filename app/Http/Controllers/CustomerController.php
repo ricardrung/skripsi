@@ -12,8 +12,10 @@ class CustomerController extends Controller
     
 public function index(Request $request)
 {
-    $query = User::withCount('bookingsAsCustomer')
+    $query = User::withCount('bookingsSelesaiAsCustomer')
+        ->with('currentMembership.membership')
         ->where('role', 'customer');
+        
 
     // Filter berdasarkan pencarian
     if ($request->filled('search')) {

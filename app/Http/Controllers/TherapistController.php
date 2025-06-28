@@ -24,9 +24,21 @@ class TherapistController extends Controller
 
 
           // PAGINATE langsung tanpa get()
-    $therapists = $query->withCount(['bookings' => function ($q) {
-        $q->where('status', 'menunggu')->orWhere('status', 'sedang');
-    }])->paginate(10);
+    $therapists = $query
+    ->withCount([
+        'bookings' => function ($q) {
+            $q->where('status', 'menunggu')->orWhere('status', 'sedang');
+        },
+        'bookingsToday' => function ($q) {
+            $q->whereDate('booking_date', now())->where('status', '!=', 'batal');
+        },
+        'bookingsSelesaiBulanIni' => fn($q) =>
+            $q->where('status', 'selesai')
+            ->whereMonth('booking_date', now()->month)
+            ->whereYear('booking_date', now()->year),
+    ])
+    ->paginate(10);
+
 
         return view('pages.admin.manajementherapist', compact('therapists'));
     }

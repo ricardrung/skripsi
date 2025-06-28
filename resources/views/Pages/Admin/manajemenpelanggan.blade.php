@@ -45,6 +45,7 @@
                             <th class="py-3 px-4 text-left">Tanggal Lahir</th>
                             <th class="py-3 px-4 text-left">Kontak</th>
                             <th class="py-3 px-4 text-left">Booking</th>
+                            <th class="py-3 px-4 text-left">Membership</th>
                             <th class="py-3 px-4 text-left">Aksi</th>
                         </tr>
                     </thead>
@@ -59,7 +60,10 @@
                                     {{ $cust->birthdate ? \Carbon\Carbon::parse($cust->birthdate)->format('d-m-Y') : '-' }}
                                 </td>
                                 <td class="py-3 px-4">{{ $cust->phone ?? '-' }}</td>
-                                <td class="py-3 px-4">{{ $cust->bookings_as_customer_count ?? 0 }}</td>
+                                <td class="py-3 px-4">{{ $cust->bookings_selesai_as_customer_count ?? 0 }}</td>
+                                <td class="py-3 px-4">
+                                    {{ $cust->currentMembership->membership->name ?? 'Classic' }}
+                                </td>
                                 <td class="py-3 px-4 space-y-2">
                                     <button onclick="openEditModal(this)" data-id="{{ $cust->id }}"
                                         data-name="{{ $cust->name }}" data-email="{{ $cust->email }}"

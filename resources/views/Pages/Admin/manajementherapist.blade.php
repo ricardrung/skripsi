@@ -49,6 +49,8 @@
                             <th class="py-3 px-4 text-left">Kontak</th>
                             <th class="py-3 px-4 text-left">Ketersediaan</th>
                             <th class="py-3 px-4 text-left">Booking Aktif</th>
+                            <th class="py-3 px-4 text-left">Hari Ini</th>
+                            <th class="py-3 px-4 text-left">Bulan Ini</th>
                             <th class="py-3 px-4 text-left">Foto</th>
                             <th class="py-3 px-4 text-left">Aksi</th>
                         </tr>
@@ -74,6 +76,8 @@
                                     </span>
                                 </td>
                                 <td class="py-3 px-4">{{ $therapist->bookings_count ?? 0 }}</td>
+                                <td class="py-3 px-4">{{ $therapist->bookings_today_count ?? 0 }}</td>
+                                <td class="py-3 px-4">{{ $therapist->bookings_selesai_bulan_ini_count ?? 0 }}</td>
                                 <td class="py-3 px-4">
                                     @if ($therapist->photo)
                                         <img src="{{ asset('storage/' . $therapist->photo) }}" alt="foto"

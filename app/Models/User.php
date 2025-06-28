@@ -81,9 +81,30 @@ class User extends Authenticatable
     }
 
     public function userMembership()
-{
-    return $this->hasOne(UserMembership::class);
-}
+    {
+        return $this->hasOne(UserMembership::class);
+    }
+
+    public function bookingsToday()
+    {
+        return $this->hasMany(Booking::class, 'therapist_id')
+            ->whereDate('booking_date', now()->toDateString())
+            ->where('status', '!=', 'batal');
+    }
+
+    public function bookingsSelesaiBulanIni()
+    {
+        return $this->hasMany(Booking::class, 'therapist_id')
+            ->where('status', 'selesai')
+            ->whereMonth('booking_date', now()->month)
+            ->whereYear('booking_date', now()->year);
+    }
+
+    public function bookingsSelesaiAsCustomer()
+    {
+        return $this->hasMany(\App\Models\Booking::class, 'user_id')
+            ->where('status', 'selesai');
+    }
 
 
     

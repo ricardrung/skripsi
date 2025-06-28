@@ -82,7 +82,7 @@
             <li>
                 <a href="/memberships"
                     class="p-6 hover:bg-[#3a2416] flex items-center space-x-3 block  {{ request()->is('memberships') ? 'bg-[#3a2416]' : '' }}">
-                    <i class="fas fa-users"></i> <span class="sidebar-text">Memberships</span>
+                    <i class="fas fa-medal"></i><span class="sidebar-text">Manajemen Memberships</span>
                 </a>
             </li>
             {{-- <li>
