@@ -55,6 +55,7 @@ Route::middleware(['auth', 'verified', 'customer'])->group(function () {
     Route::delete('/riwayatbooking/{id}', [BookingController::class, 'cancelBookingCustomer'])->name('booking.cancel.customer');
     Route::get('/promo', [TreatmentCategoryController::class, 'promoTreatmentPage']);
     Route::get('/booking/pay-again/{id}', [BookingController::class, 'payAgain'])->name('booking.payAgain');
+    Route::get('/api/all-room-capacities', [BookingController::class, 'getAllRoomCapacities']);
 
     Route::post('/feedback', [BookingFeedbackController::class, 'store'])->name('feedback.store');
     Route::get('/membership', [MembershipController::class, 'index'])->name('user.membership');
@@ -102,6 +103,8 @@ Route::middleware(['auth', 'verified', 'admin'])->group(function () {
     Route::get('/manajemen-ruangan', [SpaRoomController::class, 'index'])->name('spa_rooms.index');
     // Resource lengkap (CRUD)
     Route::resource('spa_rooms', SpaRoomController::class);
+ 
+
 
     Route::get('/manajemen-pelanggan', [CustomerController::class, 'index'])->name('customers.index');
     Route::post('/manajemen-pelanggan', [CustomerController::class, 'store'])->name('customers.store');

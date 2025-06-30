@@ -94,7 +94,7 @@ public function storeCustomer(Request $request)
         'booking_time' => 'required',
         'therapist_id' => 'nullable|exists:users,id',
         'payment_method' => 'required|in:cash,gateway',
-        'room_type' => 'required|in:single,double,hair',
+        'room_type' => 'required|in:single,double,hair,reflexology',
     ]);
 
     //waktu
@@ -214,13 +214,31 @@ public function storeCustomer(Request $request)
         return back()->with('error', 'Maaf, semua ruangan untuk treatment ini penuh pada waktu tersebut.');
     }
     // Validasi tambahan jika treatment tidak cocok dengan room_type yang dipilih user
-    if (!in_array($request->room_type, ['single', 'double', 'hair'])) {
+    if (!in_array($request->room_type, ['single', 'double', 'hair', 'reflexology'])) {
         return back()->with('error', 'Tipe ruangan tidak valid.');
     }
 
-    if ($treatment->room_type !== 'both' && $treatment->room_type !== $request->room_type) {
+    // Mapping fleksibel room_type treatment → daftar room real di spa_rooms
+    $roomMapping = [
+        'single' => ['single'],
+        'double' => ['double'],
+        'both' => ['single', 'double'],
+        'hair' => ['hair'],
+        'reflexology' => ['reflexology'],
+        'triple' => ['single', 'double', 'reflexology'],
+    ];
+
+    // Pastikan room_type yang diminta user sesuai isi SpaRoom
+    $roomType = $request->room_type;
+    $allowedRoomTypes = $roomMapping[$treatment->room_type] ?? [];
+
+    if (!in_array($roomType, $allowedRoomTypes)) {
         return back()->with('error', 'Treatment ini tidak tersedia untuk tipe ruangan yang dipilih.');
     }
+
+    // if ($treatment->room_type !== 'both' && $treatment->room_type !== $request->room_type) {
+    //     return back()->with('error', 'Treatment ini tidak tersedia untuk tipe ruangan yang dipilih.');
+    // }
 
 DB::beginTransaction(); // ✅ Mulai transaksi
 
@@ -316,9 +334,10 @@ $createdBookingIds = [];
         $secondTherapistId = $availableSecondTherapists->first()->id;
     }
     //pilih treatment kedua yang cocok dengan ruang doouble
-    if ($treatment2->room_type !== 'both' && $treatment2->room_type !== 'double') {
+    if (!in_array($treatment2->room_type, ['both', 'double', 'reflexology', 'triple'])) {
     throw new \Exception('Treatment kedua tidak cocok untuk ruangan double.');
     }
+
 
 
     // Proses booking kedua dengan therapist kedua
@@ -532,7 +551,7 @@ public function storeAdmin(Request $request)
         'user_id' => 'nullable|exists:users,id',
         'guest_name' => 'nullable|string',
         'guest_phone' => 'nullable|string',
-        'room_type' => 'required|in:single,double,hair',
+        'room_type' => 'required|in:single,double,hair,reflexology',
         'second_treatment_id' => 'nullable|exists:treatments,id',
         'second_therapist_id' => 'nullable|exists:users,id',
         'is_promo_reward' => 'nullable|boolean',
@@ -550,9 +569,26 @@ public function storeAdmin(Request $request)
     $treatment = Treatment::where('id', $request->treatment_id)->where('is_available', true)->first();
     if (!$treatment) return back()->with('error', 'Treatment ini tidak tersedia untuk saat ini.');
 
-    if ($treatment->room_type !== 'both' && $treatment->room_type !== $request->room_type) {
-        return back()->with('error', 'Treatment tidak sesuai dengan tipe ruangan yang dipilih.');
+    // ✅ Mapping fleksibilitas room_type treatment ke room fisik spa_rooms
+    $roomMapping = [
+        'single' => ['single'],
+        'double' => ['double'],
+        'both' => ['single', 'double'],
+        'hair' => ['hair'],
+        'reflexology' => ['reflexology'],
+        'triple' => ['single', 'double', 'reflexology'],
+    ];
+
+    $roomType = $request->room_type;
+    $allowedRoomTypes = $roomMapping[$treatment->room_type] ?? [];
+
+    if (!in_array($roomType, $allowedRoomTypes)) {
+        return back()->with('error', 'Treatment ini tidak tersedia untuk tipe ruangan yang dipilih.');
     }
+
+    // if ($treatment->room_type !== 'both' && $treatment->room_type !== $request->room_type) {
+    //     return back()->with('error', 'Treatment tidak sesuai dengan tipe ruangan yang dipilih.');
+    // }
 
     $startTime = Carbon::parse($request->booking_time);
     $endTime = $startTime->copy()->addMinutes($treatment->duration_minutes);
@@ -643,9 +679,10 @@ public function storeAdmin(Request $request)
             }
 
             $treatment2 = Treatment::findOrFail($request->second_treatment_id);
-            if ($treatment2->room_type !== 'both' && $treatment2->room_type !== 'double') {
+            if (!in_array($treatment2->room_type, ['both', 'double', 'reflexology', 'triple'])) {
                 throw new \Exception('Treatment kedua tidak cocok untuk ruangan double.');
             }
+
 
             $isHappyHour2 = $treatment2->happy_hour_price &&
                 in_array($bookingDateTime->dayOfWeek, [1, 2, 3, 4, 5]) &&
@@ -998,6 +1035,62 @@ public function getAvailableTherapistsForSecondTreatment(Request $request)
         'therapists' => $therapists->values(),
     ]);
 }
+
+public function getAllRoomCapacities(Request $request)
+{
+    $date = $request->date;
+    $time = $request->time;
+    $treatmentId1 = $request->treatment_id1; // treatment pertama
+    $treatmentId2 = $request->treatment_id2; // treatment kedua (opsional)
+
+    if (!$date || !$time) {
+        return response()->json(['error' => 'Tanggal dan jam wajib diisi.'], 400);
+    }
+
+    $startTime = \Carbon\Carbon::parse($time);
+
+    // Durasi treatment pertama
+    $duration1 = \App\Models\Treatment::find($treatmentId1)?->duration_minutes ?? 0;
+    // Durasi treatment kedua (jika ruangan double)
+    $duration2 = \App\Models\Treatment::find($treatmentId2)?->duration_minutes ?? 0;
+
+    // Durasi untuk pengecekan ruangan double: ambil yang terpanjang
+    $maxDoubleDuration = max($duration1, $duration2);
+
+    $roomTypes = ['single', 'double', 'reflexology', 'hair'];
+    $data = [];
+
+    foreach ($roomTypes as $roomType) {
+        $maxCapacity = \App\Models\SpaRoom::where('room_type', $roomType)->sum('capacity');
+
+        // Tentukan endTime sesuai durasi dan tipe ruangan
+        if ($roomType == 'double') {
+            $endTime = $startTime->copy()->addMinutes($maxDoubleDuration);
+        } else {
+            // TreatmentId1 tetap digunakan untuk room selain double
+            $endTime = $startTime->copy()->addMinutes($duration1);
+        }
+
+        $bookedCount = \App\Models\Booking::where('booking_date', $date)
+            ->where('room_type', $roomType)
+            ->where('status', '!=', 'batal')
+            ->where(function ($query) use ($startTime, $endTime) {
+                $query->whereBetween('booking_time', [$startTime->format('H:i:s'), $endTime->format('H:i:s')])
+                    ->orWhereRaw('? BETWEEN booking_time AND ADDTIME(booking_time, SEC_TO_TIME(duration_minutes * 60))', [$startTime->format('H:i:s')]);
+            })
+            ->count();
+
+        $data[$roomType] = [
+            'max_capacity' => $maxCapacity,
+            'booked_count' => $bookedCount,
+            'available' => max($maxCapacity - $bookedCount, 0)
+        ];
+    }
+
+    return response()->json($data);
+}
+
+
 
 
 

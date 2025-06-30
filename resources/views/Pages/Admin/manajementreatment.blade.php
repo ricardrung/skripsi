@@ -155,6 +155,7 @@
                         <option value="double">Double</option>
                         <option value="both">Bisa Single & Double</option>
                         <option value="hair">Hair</option>
+                        <option value="triple">Bisa Single & Double & Reflexology</option>
                     </select>
 
 

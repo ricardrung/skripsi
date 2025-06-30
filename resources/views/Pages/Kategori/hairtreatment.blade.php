@@ -59,13 +59,7 @@
                                     $finalPrice =
                                         $discount > 0 ? floor($originalPrice * (1 - $discount / 100)) : $originalPrice;
                                 @endphp
-                                <pre>
-USER: {{ Auth::user()->name ?? '-' }}
-Membership: {{ $userMembership?->membership?->name ?? '-' }}
-Scope: {{ $userMembership?->membership?->applies_to ?? '-' }}
-Category: {{ $treatment->category->name ?? '-' }}
-Diskon: {{ $discount }}%
-</pre>
+
                                 <h3 class="text-2xl font-semibold text-[#2c1a0f]">{{ $treatment->name }}</h3>
                                 <p class="text-gray-700 my-2">{{ $treatment->description }}</p>
                                 @if ($finalPrice < $originalPrice)
@@ -543,6 +537,41 @@ Diskon: {{ $discount }}%
                         document.getElementById('therapist_id').addEventListener('change', fetchAvailableTherapistsSecondTreatment);
                         document.getElementById('booking_date').addEventListener('change', fetchAvailableTherapistsSecondTreatment);
                         document.getElementById('booking_time').addEventListener('change', fetchAvailableTherapistsSecondTreatment);
+
+                        function updateRoomTypeOptions() {
+                            const date = document.getElementById('booking_date').value;
+                            const time = document.getElementById('booking_time').value;
+                            const treatmentId1 = document.getElementById('treatment_id').value;
+                            const treatmentId2 = document.getElementById('second_treatment_id').value;
+
+                            if (!date || !time || !treatmentId1) return;
+
+                            fetch(
+                                    `/api/all-room-capacities?date=${date}&time=${time}&treatment_id1=${treatmentId1}&treatment_id2=${treatmentId2}`
+                                )
+                                .then(response => response.json())
+                                .then(data => {
+                                    const select = document.getElementById('room_type');
+                                    Array.from(select.options).forEach(option => {
+                                        const roomType = option.value;
+                                        if (roomType && data[roomType]) {
+                                            const available = data[roomType].available;
+                                            const max = data[roomType].max_capacity;
+                                            option.textContent =
+                                                `${roomType.charAt(0).toUpperCase() + roomType.slice(1)} (tersedia ${available} dari ${max})`;
+                                        }
+                                    });
+                                })
+                                .catch(err => {
+                                    console.error('Gagal memuat kapasitas semua ruangan:', err);
+                                });
+                        }
+
+                        // Panggil saat tanggal, jam, treatment pertama, atau kedua berubah
+                        document.getElementById('booking_date').addEventListener('change', updateRoomTypeOptions);
+                        document.getElementById('booking_time').addEventListener('change', updateRoomTypeOptions);
+                        document.getElementById('treatment_id').addEventListener('change', updateRoomTypeOptions);
+                        document.getElementById('second_treatment_id').addEventListener('change', updateRoomTypeOptions);
                     </script>
                 </div>
             </div>
