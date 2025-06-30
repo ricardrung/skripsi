@@ -34,7 +34,7 @@
 
             <!-- Logo & Deskripsi -->
             <div>
-                <img src="/images/RRS_Background.png" alt="Logo" class="w-24 h-24">
+                <img src="/Images/RRS_Background.png" alt="Logo" class="w-24 h-24">
                 <p class="mt-3 text-gray-300">
                     Roemah Rempah Spa Manado <br>
                     Nikmati pengalaman spa terbaik dengan bahan alami.
@@ -79,7 +79,8 @@
                     <a href="https://www.facebook.com/share/1Bnq97Cerr/"
                         class="text-gray-300 hover:text-white text-xl"><i class="fa-brands fa-facebook"></i></a>
                 </div>
-                <p class="text-gray-400 mt-4">© 2025 Roemah Rempah Spa. All Rights Reserved.</p>
+                <p class="text-gray-400 mt-4">© {{ date('Y') }} Roemah Rempah Spa. All Rights Reserved.</p>
+
             </div>
 
         </div>

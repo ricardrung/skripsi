@@ -3,7 +3,7 @@
         <div class="container mx-auto flex justify-between items-center px-4 md:px-6 lg:px-8 py-4">
             <!-- Logo -->
             <a href="/" class="flex items-center space-x-2">
-                <img src="/images/RRS_Background.png" alt="Logo" class="h-16 w-auto">
+                <img src="/Images/RRS_Background.png" alt="Logo" class="h-16 w-auto">
                 <span class="font-bold text-xl text-center">Roemah Rempah Spa <br> Manado</span>
             </a>
 
