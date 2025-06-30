@@ -25,7 +25,9 @@ class MembershipController extends Controller
             $memberships = Membership::orderBy('min_annual_spending')->get();
             $activeMembership = $user->currentMembership?->membership;
 
-            return view('pages.membership.membership', compact('memberships', 'activeMembership'));
+            $yearlySpending = $user->currentMembership?->yearly_spending ?? 0;
+
+            return view('pages.membership.membership', compact('memberships', 'activeMembership', 'yearlySpending'));
         }
     }
 

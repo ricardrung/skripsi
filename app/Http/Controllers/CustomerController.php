@@ -25,14 +25,17 @@ public function index(Request $request)
         });
     }
 
-    if ($request->filled('gender')) {
-    $query->where('gender', $request->gender);
-}
+    if ($request->filled('membership_id')) {
+        $query->whereHas('currentMembership', function ($q) use ($request) {
+            $q->where('membership_id', $request->membership_id);
+        });
+    }
 
     $customers = $query->latest()->paginate(10);
+    $memberships = \App\Models\Membership::all();
 
 
-    return view('pages.admin.manajemenpelanggan', compact('customers'));
+    return view('pages.admin.manajemenpelanggan', compact('customers', 'memberships'));
 }
 
 public function store(Request $request)

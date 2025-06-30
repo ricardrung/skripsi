@@ -4,6 +4,12 @@
     <header class="bg-white shadow-sm pt-24">
         <div class="container mx-auto px-4 py-6">
             <h1 class="text-4xl md:text-5xl font-bold tracking-tight text-[#2c1a0f] text-center">Memberships</h1>
+            <div class="text-center mt-4">
+                <p class="text-lg text-gray-700">
+                    Total Belanja Tahun Ini:
+                    <span class="font-semibold">Rp{{ number_format($yearlySpending) }}</span>
+                </p>
+            </div>
             <div class="container mx-auto px-4 py-10">
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 

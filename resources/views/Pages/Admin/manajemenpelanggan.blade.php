@@ -16,10 +16,14 @@
             <input type="text" name="search" placeholder="Cari nama/email..." value="{{ request('search') }}"
                 class="p-2 border rounded w-full sm:w-64">
 
-            <select name="gender" class="p-2 border rounded bg-white w-full sm:w-48">
-                <option value="">Semua Gender</option>
-                <option value="male" {{ request('gender') == 'male' ? 'selected' : '' }}>Laki-laki</option>
-                <option value="female" {{ request('gender') == 'female' ? 'selected' : '' }}>Perempuan</option>
+            <select name="membership_id" class="p-2 border rounded bg-white w-full sm:w-48">
+                <option value="">Semua Membership</option>
+                @foreach ($memberships as $membership)
+                    <option value="{{ $membership->id }}"
+                        {{ request('membership_id') == $membership->id ? 'selected' : '' }}>
+                        {{ $membership->name }}
+                    </option>
+                @endforeach
             </select>
 
 
@@ -46,12 +50,13 @@
                             <th class="py-3 px-4 text-left">Kontak</th>
                             <th class="py-3 px-4 text-left">Booking</th>
                             <th class="py-3 px-4 text-left">Membership</th>
+                            <th class="py-3 px-4 text-left">Spending Tahun Ini</th>
                             <th class="py-3 px-4 text-left">Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach ($customers as $index => $cust)
-                            <tr class="border-b hover:bg-gray-50">
+                            <tr class="border-b hover:bg-gray-50 whitespace-nowrap">
                                 <td class="py-3 px-4">{{ $index + 1 }}</td>
                                 <td class="py-3 px-4">{{ $cust->name }}</td>
                                 <td class="py-3 px-4">{{ $cust->email }}</td>
@@ -63,6 +68,9 @@
                                 <td class="py-3 px-4">{{ $cust->bookings_selesai_as_customer_count ?? 0 }}</td>
                                 <td class="py-3 px-4">
                                     {{ $cust->currentMembership->membership->name ?? 'Classic' }}
+                                </td>
+                                <td class="py-3 px-4">
+                                    Rp {{ number_format($cust->currentMembership->yearly_spending ?? 0, 0, ',', '.') }}
                                 </td>
                                 <td class="py-3 px-4 space-y-2">
                                     <button onclick="openEditModal(this)" data-id="{{ $cust->id }}"
