@@ -2,5 +2,6 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PaymentController;
+use Illuminate\Http\Request;
 
-Route::post('/payment/callback', [PaymentController::class, 'handleCallback']);
+Route::post('/api/payment/callback', [PaymentController::class, 'handleCallback']);
