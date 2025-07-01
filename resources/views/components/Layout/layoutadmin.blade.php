@@ -19,7 +19,7 @@
 
         <!-- Logo -->
         <div class="flex justify-center items-center py-4">
-            <img id="logo" src="/images/rrs_background.png" alt="Logo"
+            <img id="logo" src="/Images/RRS_Background.png" alt="Logo"
                 class="h-36 w-auto object-contain transition-all duration-300">
         </div>
 
