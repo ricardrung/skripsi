@@ -32,7 +32,7 @@ Route::get('/kategori/reflexology', [TreatmentCategoryController::class, 'reflex
 Route::get('/kategori/treatmentpackages', [TreatmentCategoryController::class, 'packagesTreatmentPage']);
 
 Route::get('/kategori/alacarte', [TreatmentCategoryController::class, 'alacarteTreatmentPage']);
-// Route::post('/payment/callback', [PaymentController::class, 'handleCallback'])->name('payment.callback');
+Route::post('/payment/callback', [PaymentController::class, 'handleCallback'])->name('payment.callback');
 // Route::post('/api/payment/callback', [PaymentController::class, 'handleCallback'])->name('payment.callback');
 // Route::get('/kategori/prewedding', function () {
 //     return view('pages.kategori.prewedding');
@@ -146,7 +146,7 @@ Route::middleware('auth')->group(function () {
 });
 
 require __DIR__.'/auth.php';
-require __DIR__.'/api.php';
+
 // Route::get('/riwayatbooking', function () {
 //     return view('pages.riwayatbooking.riwayatbooking');
 // });
