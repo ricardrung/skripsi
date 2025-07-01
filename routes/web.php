@@ -145,9 +145,9 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-Route::prefix('api')->group(function () {
-    Route::post('/payment/callback', [PaymentController::class, 'handleCallback']);
-});
+// Route::prefix('api')->group(function () {
+//     Route::post('/payment/callback', [PaymentController::class, 'handleCallback']);
+// });
 
 require __DIR__.'/auth.php';
 
