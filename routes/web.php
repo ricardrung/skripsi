@@ -33,7 +33,7 @@ Route::get('/kategori/treatmentpackages', [TreatmentCategoryController::class, '
 
 Route::get('/kategori/alacarte', [TreatmentCategoryController::class, 'alacarteTreatmentPage']);
 // Route::post('/payment/callback', [PaymentController::class, 'handleCallback'])->name('payment.callback');
-Route::post('/api/payment/callback', [PaymentController::class, 'handleCallback'])->name('payment.callback');
+// Route::post('/api/payment/callback', [PaymentController::class, 'handleCallback'])->name('payment.callback');
 // Route::get('/kategori/prewedding', function () {
 //     return view('pages.kategori.prewedding');
 // });
