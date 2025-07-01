@@ -69,7 +69,7 @@ public function index(Request $request)
     // Kalau butuh kategori untuk dropdown kategori (meskipun tidak terlihat di Blade kamu sekarang)
     $categories = \App\Models\TreatmentCategory::pluck('name', 'id');
 
-    return view('pages.admin.manajemenbooking', compact('bookings', 'categories', 'creators'));
+    return view('Pages.Admin.manajemenbooking', compact('bookings', 'categories', 'creators'));
 }
 
 
@@ -81,7 +81,7 @@ public function index(Request $request)
         $allTreatments = Treatment::where('category_id', '!=', 7)->get();
 
 
-        return view('pages.admin.inputbookingmanual', compact('customers', 'treatments', 'therapists', 'allTreatments'));
+        return view('Pages.Admin.inputbookingmanual', compact('customers', 'treatments', 'therapists', 'allTreatments'));
     }
 
 
@@ -439,7 +439,7 @@ if ($request->payment_method === 'gateway') {
         }
     }
 
-    return view('pages.booking.snap', compact('snapToken'));
+    return view('Pages.Booking.snap', compact('snapToken'));
 }
 
     if ($request->payment_method === 'cash') {
@@ -532,7 +532,7 @@ public function payAgain($id)
         }
     }
 
-    return view('pages.booking.snap', compact('snapToken'));
+    return view('Pages.Booking.snap', compact('snapToken'));
 }
 
 
@@ -834,7 +834,7 @@ public function riwayatCustomer(Request $request)
 
     $bookings = $query->paginate(8)->appends(request()->query());
 
-    return view('pages.riwayatbooking.riwayatbooking', compact('bookings'));
+    return view('Pages.RiwayatBooking.riwayatbooking', compact('bookings'));
 }
 
 
@@ -961,7 +961,7 @@ public function manajemenPembayaran(Request $request)
     $therapists = User::where('role', 'therapist')->get(); 
     $bookings = $query->paginate(10);
 
-    return view('pages.admin.manajemenpembayaran', compact('bookings', 'therapists'));
+    return view('Pages.Admin.manajemenpembayaran', compact('bookings', 'therapists'));
 }
 
 // di manajemenPembayaran

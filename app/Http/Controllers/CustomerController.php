@@ -35,7 +35,7 @@ public function index(Request $request)
     $memberships = \App\Models\Membership::all();
 
 
-    return view('pages.admin.manajemenpelanggan', compact('customers', 'memberships'));
+    return view('Pages.Admin.manajemenpelanggan', compact('customers', 'memberships'));
 }
 
 public function store(Request $request)
@@ -65,7 +65,7 @@ public function store(Request $request)
 public function edit($id)
 {
     $customer = User::where('role', 'customer')->findOrFail($id);
-    return view('pages.admin.manajemenpelanggan', compact('customer'));
+    return view('Pages.Admin.manajemenpelanggan', compact('customer'));
 }
 
 public function update(Request $request, $id)

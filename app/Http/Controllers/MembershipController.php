@@ -19,7 +19,7 @@ class MembershipController extends Controller
         if ($user->role === 'admin') {
             // Admin melihat manajemen membership
             $memberships = Membership::orderBy('min_annual_spending')->get();
-            return view('pages.admin.memberships', [ 'memberships' => $memberships, 'mode' => 'index']);
+            return view('Pages.Admin.memberships', [ 'memberships' => $memberships, 'mode' => 'index']);
         } else {
             // Customer melihat daftar tingkatan membership
             $memberships = Membership::orderBy('min_annual_spending')->get();
@@ -27,7 +27,7 @@ class MembershipController extends Controller
 
             $yearlySpending = $user->currentMembership?->yearly_spending ?? 0;
 
-            return view('pages.membership.membership', compact('memberships', 'activeMembership', 'yearlySpending'));
+            return view('Pages.Membership.membership', compact('memberships', 'activeMembership', 'yearlySpending'));
         }
     }
 
@@ -38,7 +38,7 @@ class MembershipController extends Controller
     public function create()
     {
         //
-        return view('pages.admin.memberships', ['mode' => 'create','membership' => new Membership()]);
+        return view('Pages.Admin.memberships', ['mode' => 'create','membership' => new Membership()]);
     }
 
     /**
@@ -74,7 +74,7 @@ class MembershipController extends Controller
     public function edit(Membership $membership)
     {
         //
-        return view('pages.admin.memberships', ['mode' => 'edit','membership' => $membership]);
+        return view('Pages.Admin.memberships', ['mode' => 'edit','membership' => $membership]);
     }
 
     /**

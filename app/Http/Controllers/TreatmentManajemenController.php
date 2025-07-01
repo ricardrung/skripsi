@@ -31,7 +31,7 @@ public function index(Request $request)
 
     $roomTypes = SpaRoom::select('room_type')->distinct()->pluck('room_type');
 
-    return view('pages.admin.manajementreatment', compact('treatments', 'categories', 'roomTypes'));
+    return view('Pages.Admin.manajementreatment', compact('treatments', 'categories', 'roomTypes'));
 }
 
 

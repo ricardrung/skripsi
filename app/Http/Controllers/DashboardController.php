@@ -32,7 +32,7 @@ class DashboardController extends Controller
         });
 
 
-        return view('pages.admin.dashboard', [
+        return view('Pages.Admin.dashboard', [
             'todayBookings' => Booking::whereDate('booking_date', $today)->count(),
             'weeklyBookings' => Booking::whereBetween('booking_date', $thisWeek)->count(),
             'monthlyBookings' => Booking::whereMonth('booking_date', $thisMonth)->count(),

@@ -40,7 +40,7 @@ class TherapistController extends Controller
     ->paginate(10);
 
 
-        return view('pages.admin.manajementherapist', compact('therapists'));
+        return view('Pages.Admin.manajementherapist', compact('therapists'));
     }
 
     public function destroy($id)
@@ -158,7 +158,7 @@ public function dashboardTherapist()
 }
 
 
-    return view('pages.therapist.dashboard', compact('todayBookings', 'weeklyCount', 'monthlyCount', 'status', 'chartLabels', 'chartData'));
+    return view('Pages.Therapist.dashboard', compact('todayBookings', 'weeklyCount', 'monthlyCount', 'status', 'chartLabels', 'chartData'));
 }
 
 

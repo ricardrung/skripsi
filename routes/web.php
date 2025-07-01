@@ -39,7 +39,7 @@ Route::post('/payment/callback', [PaymentController::class, 'handleCallback'])->
 // });
 
 Route::get('/contact', function () {
-    return view('pages.contact.contact');
+    return view('Pages.Contact.contact');
 });
 
 Route::get('/gallery', [SpaRoomController::class, 'gallery'])->name('gallery');

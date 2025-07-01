@@ -18,7 +18,7 @@ class SpaRoomController extends Controller
         }
         $rooms = $query->latest()->paginate(10);
         
-        return view('pages.admin.manajemenruangan', compact('rooms'));
+        return view('Pages.Admin.manajemenruangan', compact('rooms'));
     }
     
 
@@ -92,7 +92,7 @@ class SpaRoomController extends Controller
         public function gallery()
     {
         $rooms = SpaRoom::where('is_active', true)->get();
-        return view('pages.gallery.gallery', compact('rooms'));
+        return view('Pages.Gallery.gallery', compact('rooms'));
     }
 
 }
