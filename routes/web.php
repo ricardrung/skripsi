@@ -32,7 +32,7 @@ Route::get('/kategori/reflexology', [TreatmentCategoryController::class, 'reflex
 Route::get('/kategori/treatmentpackages', [TreatmentCategoryController::class, 'packagesTreatmentPage']);
 
 Route::get('/kategori/alacarte', [TreatmentCategoryController::class, 'alacarteTreatmentPage']);
-Route::post('/payment/callback', [PaymentController::class, 'handleCallback'])->name('payment.callback');
+// Route::post('/payment/callback', [PaymentController::class, 'handleCallback'])->name('payment.callback');
 // Route::post('/api/payment/callback', [PaymentController::class, 'handleCallback'])->name('payment.callback');
 // Route::get('/kategori/prewedding', function () {
 //     return view('pages.kategori.prewedding');
@@ -143,6 +143,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+});
+
+Route::prefix('api')->group(function () {
+    Route::post('/payment/callback', [PaymentController::class, 'handleCallback']);
 });
 
 require __DIR__.'/auth.php';
