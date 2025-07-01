@@ -18,10 +18,10 @@
 
 <body class="flex flex-col min-h-screen ">
     @auth
-        @include('Components.Navbar.nav-customer')
+        @include('components.Navbar.nav-customer')
     @endauth
     @guest
-        @include('Components.Navbar.nav-guest')
+        @include('components.Navbar.nav-guest')
     @endguest
 
     <main>

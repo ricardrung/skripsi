@@ -1,4 +1,4 @@
-@extends('Components.Layout.layout')
+@extends('components.Layout.layout')
 @section('content')
     <!-- Hero Section -->
     <section class="relative w-full min-h-screen flex items-center justify-center bg-cover bg-center pt-20 sm:pt-0">

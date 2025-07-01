@@ -1,4 +1,4 @@
-@extends('Components.Layout.layoutadmin')
+@extends('components.Layout.layoutadmin')
 
 @section('content')
     <div class="p-6">

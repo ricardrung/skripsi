@@ -1,4 +1,4 @@
-@extends('Components.Layout.layout')
+@extends('components.Layout.layout')
 @section('content')
     <header class="bg-white shadow-sm pt-24">
         <div class="container mx-auto px-4 py-6 ">

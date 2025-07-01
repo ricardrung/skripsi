@@ -1,4 +1,4 @@
-@extends('Components.Layout.layout')
+@extends('components.Layout.layout')
 
 @section('content')
     <div class="container mx-auto py-10">

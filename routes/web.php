@@ -131,7 +131,7 @@ Route::middleware([BlockAdminFromPublic::class, BlockTherapistFromPublic::class]
     Route::get('/kategori/treatmentpackages', [TreatmentCategoryController::class, 'packagesTreatmentPage']);
     Route::get('/kategori/alacarte', [TreatmentCategoryController::class, 'alacarteTreatmentPage']);
     // Route::get('/kategori/prewedding', fn () => view('pages.kategori.prewedding'));
-    Route::get('/contact', fn () => view('pages.contact.contact'));
+    Route::get('/contact', fn () => view('Pages.Contact.contact'));
     Route::get('/gallery', [SpaRoomController::class, 'gallery'])->name('gallery');
 });
 
