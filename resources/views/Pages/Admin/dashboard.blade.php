@@ -10,6 +10,8 @@
                     <p class="text-3xl font-bold text-blue-600">{{ $todayBookings }}</p>
                 </div>
             </a>
+
+
             <a href="{{ route('booking.admin') }}">
                 <div class="bg-white p-4 shadow-md rounded-lg hover:bg-blue-50 transition">
                     <h2 class="text-lg font-semibold text-gray-700">Booking Minggu Ini</h2>
