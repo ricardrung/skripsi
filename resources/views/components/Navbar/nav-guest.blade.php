@@ -27,7 +27,7 @@
                     </div>
                 </div>
                 {{-- <a href="/alltreatment" class="hover:text-gray-300">All Treatment</a> --}}
-                <a href="/gallery" class="hover:text-gray-300">Gallery</a>
+                <a href="/gallery" class="hover:text-gray-300">Room</a>
                 <a href="/contact" class="hover:text-gray-300">Contact Us</a>
             </nav>
 
@@ -72,7 +72,7 @@
             </div>
 
             {{-- <a href="#layanan" class="block px-4 py-2 border-b border-gray-600">Layanan</a> --}}
-            <a href="/gallery" class="block px-4 py-2 border-b border-gray-600">Gallery</a>
+            <a href="/gallery" class="block px-4 py-2 border-b border-gray-600">Room</a>
             <a href="/contact" class="block px-4 py-2 border-b border-gray-600">Contact Us</a>
 
             <!-- Mobile Search -->
