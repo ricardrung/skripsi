@@ -242,6 +242,7 @@
                     <label class="block text-sm text-gray-700">Email</label>
                     <input type="email" name="email" id="editEmail" class="w-full border rounded px-3 py-2"
                         required>
+
                 </div>
 
 
