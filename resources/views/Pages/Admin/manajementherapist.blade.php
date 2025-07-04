@@ -239,6 +239,12 @@
                 </div>
 
                 <div class="mb-3">
+                    <label class="block text-sm text-gray-700">Email</label>
+                    <input type="email" name="email" id="editEmail" class="w-full border rounded px-3 py-2" required>
+                </div>
+
+
+                <div class="mb-3">
                     <label class="block text-sm text-gray-700">Nomor Telepon</label>
                     <input type="text" name="phone" id="editPhone" class="w-full border rounded px-3 py-2"
                         required>
@@ -285,6 +291,7 @@
         function openEditModal(id, name, phone, gender, availability, photoPath = null) {
             document.getElementById('editForm').action = '/manajemen-therapist/' + id;
             document.getElementById('editName').value = name;
+            document.getElementById('editEmail').value = email;
             document.getElementById('editPhone').value = phone;
             document.getElementById('editGender').value = gender;
             document.getElementById('editAvailability').value = availability;
