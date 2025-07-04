@@ -111,6 +111,7 @@ public function update(Request $request, $id)
         'phone' => $request->phone,
         'gender' => $request->gender,
         'availability' => $request->availability,
+        'email' => $request->email,
     ]);
 
     if ($request->hasFile('photo')) {
