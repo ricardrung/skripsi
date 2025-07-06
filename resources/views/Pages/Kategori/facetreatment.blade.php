@@ -103,8 +103,9 @@
                         <!-- Form Booking Modal -->
                         <div id="bookingModal"
                             class="fixed inset-0 flex items-center justify-center  bg-opacity-50 hidden z-50 overflow-y-auto">
-                            <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-lg relative max-h-screen overflow-auto"
-                                data-harga="0">
+                            <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-lg relative"
+                                style="max-height: calc(var(--vh, 1vh) * 100); overflow-y: auto;" data-harga="0">
+
                                 <!-- Tombol Close -->
                                 <button onclick="closeModal()"
                                     class="absolute top-2 right-2 text-gray-600 hover:text-gray-800 text-2xl">&times;</button>
@@ -584,6 +585,16 @@
                         document.getElementById('treatment_id').addEventListener('change', updateRoomTypeOptions);
                         document.getElementById('second_treatment_id').addEventListener('change', updateRoomTypeOptions);
                     </script>
+                    <script>
+                        // Fix 100vh mobile bug
+                        function setVh() {
+                            let vh = window.innerHeight * 0.01;
+                            document.documentElement.style.setProperty('--vh', `${vh}px`);
+                        }
+                        setVh();
+                        window.addEventListener('resize', setVh);
+                    </script>
+
                 </div>
             </div>
         </section>
