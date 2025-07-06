@@ -5,7 +5,7 @@
         <h1 class="text-2xl font-bold text-gray-800 mb-4">Manajemen Membership</h1>
 
         {{-- Tombol Tambah Membership --}}
-        <div class="flex justify-end mb-4">
+        <div class="flex justify-between mb-4">
             <button onclick="openTambahModal()" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
                 + Tambah Membership
             </button>
