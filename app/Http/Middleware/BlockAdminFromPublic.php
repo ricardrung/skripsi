@@ -14,12 +14,28 @@ class BlockAdminFromPublic
      *
      * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
      */
-    public function handle(Request $request, Closure $next): Response
-    {
-        if (Auth::check() && Auth::user()->role === 'admin') {
-            abort(403, 'Admin tidak diperbolehkan mengakses halaman ini.');
-        }
+    // public function handle(Request $request, Closure $next): Response
+    // {
+    //     if (Auth::check() && Auth::user()->role === 'admin') {
+    //         abort(403, 'Admin tidak diperbolehkan mengakses halaman ini.');
+    //     }
 
-        return $next($request);
+    //     return $next($request);
+    // }
+
+    public function handle(Request $request, Closure $next): Response
+{
+    if (Auth::check() && Auth::user()->role === 'admin') {
+        if ($request->isMethod('get')) {
+            // Jika hanya GET, izinkan
+            return $next($request);
+        } else {
+            // Jika POST, PUT, DELETE, block
+            abort(403, 'Admin tidak diperbolehkan melakukan aksi di halaman ini.');
+        }
     }
+
+    return $next($request);
+}
+
 }

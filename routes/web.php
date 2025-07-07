@@ -119,7 +119,12 @@ Route::middleware(['auth', 'verified', 'admin'])->group(function () {
     Route::resource('memberships', MembershipController::class);
 
 
+    Route::get('/promo-preview', [TreatmentCategoryController::class, 'promoTreatmentPage'])->name('admin.preview.promo');
+    Route::get('/riwayatbooking-preview', [BookingController::class, 'riwayatCustomer'])->name('admin.preview.booking.riwayat');
+    Route::get('/membership-preview', [MembershipController::class, 'previewCustomerMembership'])->name('admin.preview.membership');
+
 });
+
 
 
 Route::middleware([BlockAdminFromPublic::class, BlockTherapistFromPublic::class])->group(function () {

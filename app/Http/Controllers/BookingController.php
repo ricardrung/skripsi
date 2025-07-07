@@ -173,6 +173,7 @@ public function storeCustomer(Request $request)
 
         $claimedPromoCount = Booking::where('user_id', Auth::id())
             ->where('is_promo_reward', true)
+            ->where('status', '!=', 'batal')
             ->count();
 
         if ($eligiblePromoCount <= $claimedPromoCount) {
@@ -180,16 +181,30 @@ public function storeCustomer(Request $request)
         }
     }
 
+    // $basePrice = $treatment->price;
+    // if ($isPromoReward) {
+    //     $finalPrice = 0;
+    // } elseif ($isHappyHour) {
+    //     $basePrice = $treatment->happy_hour_price;
+    // }
+
+    // // 💸 Hitung diskon membership
+    // $discountPercent = app(MembershipService::class)->getUserDiscount(Auth::user(), $treatment->category->name ?? '');
+    // $finalPrice = $basePrice - ($basePrice * $discountPercent / 100);
     $basePrice = $treatment->price;
     if ($isPromoReward) {
+        // Promo reward = gratis tanpa diskon membership
         $finalPrice = 0;
-    } elseif ($isHappyHour) {
-        $basePrice = $treatment->happy_hour_price;
+    } else {
+        if ($isHappyHour) {
+            $basePrice = $treatment->happy_hour_price;
+        }
+
+        // 💸 Hitung diskon membership hanya jika bukan promo reward
+        $discountPercent = app(MembershipService::class)->getUserDiscount(Auth::user(), $treatment->category->name ?? '');
+        $finalPrice = $basePrice - ($basePrice * $discountPercent / 100);
     }
 
-    // 💸 Hitung diskon membership
-    $discountPercent = app(MembershipService::class)->getUserDiscount(Auth::user(), $treatment->category->name ?? '');
-    $finalPrice = $basePrice - ($basePrice * $discountPercent / 100);
 
 
         // 1. Ambil treatment & room_type-nya
@@ -702,7 +717,7 @@ public function storeAdmin(Request $request)
                     ->filter(function ($therapist) use ($request, $startTime, $endTime) {
                         return !Booking::where('therapist_id', $therapist->id)
                             ->where('booking_date', $request->booking_date)
-                           ->whereIn('status', ['menunggu', 'sedang']) 
+                            ->whereIn('status', ['menunggu', 'sedang']) 
                             ->where(function ($query) use ($startTime, $endTime) {
                                 $query->whereBetween('booking_time', [$startTime, $endTime->copy()->subMinute()])
                                       ->orWhereRaw('? BETWEEN booking_time AND ADDTIME(booking_time, SEC_TO_TIME(duration_minutes * 60))', [$startTime->format('H:i:s')]);

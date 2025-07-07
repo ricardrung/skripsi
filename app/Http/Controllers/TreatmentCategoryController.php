@@ -118,6 +118,7 @@ public function promoTreatmentPage()
 
     $claimedPromoCount = Booking::where('user_id', $userId)
         ->where('is_promo_reward', true)
+        ->where('status', '!=', 'batal')
         ->count();
 
     $treatments = Treatment::where('is_promo', true)->get();

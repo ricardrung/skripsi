@@ -105,4 +105,14 @@ class MembershipController extends Controller
         $membership->delete();
         return redirect()->route('memberships.index')->with('success', 'Membership berhasil dihapus.');
     }
+
+    public function previewCustomerMembership()
+    {
+        $memberships = Membership::orderBy('min_annual_spending')->get();
+        $activeMembership = null;
+        $yearlySpending = 0;
+
+        return view('Pages.Membership.membership', compact('memberships', 'activeMembership', 'yearlySpending'));
+    }
+
 }

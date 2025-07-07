@@ -30,9 +30,16 @@
                 {{-- <a href="/alltreatment" class="hover:text-gray-300">All Treatment</a> --}}
                 <a href="/gallery" class="hover:text-gray-300">Room</a>
                 <a href="/contact" class="hover:text-gray-300">Contact Us</a>
-                <a href="/riwayatbooking" class="hover:text-gray-300">Bookings History</a>
-                <a href="/promo" class="hover:text-gray-300">Promo</a>
-                <a href="/membership" class="hover:text-gray-300">Membership</a>
+                @if (auth()->user()->role === 'admin')
+                    <a href="/riwayatbooking-preview" class="hover:text-gray-300">Bookings History</a>
+                    <a href="/promo-preview" class="hover:text-gray-300">Promo</a>
+                    <a href="/membership-preview" class="hover:text-gray-300">Membership</a>
+                @else
+                    <a href="/riwayatbooking" class="hover:text-gray-300">Bookings History</a>
+                    <a href="/promo" class="hover:text-gray-300">Promo</a>
+                    <a href="/membership" class="hover:text-gray-300">Membership</a>
+                @endif
+
             </nav>
 
             <!-- Search & Auth Buttons (Hanya muncul di layar 1024px ke atas) -->
@@ -173,9 +180,17 @@
             {{-- <a href="#layanan" class="block px-4 py-2 border-b border-gray-600">Layanan</a> --}}
             <a href="/gallery" class="block px-4 py-2 border-b border-gray-600">Room</a>
             <a href="/contact" class="block px-4 py-2 border-b border-gray-600">Contact Us</a>
-            <a href="/riwayatbooking" class="block px-4 py-2 border-b border-gray-600">History Bookings</a>
-            <a href="/promo" class="block px-4 py-2 border-b border-gray-600">Promo</a>
-            <a href="/membership" class="block px-4 py-2 border-b border-gray-600">Membership</a>
+            @if (auth()->user()->role === 'admin')
+                <a href="/riwayatbooking-preview" class="block px-4 py-2 border-b border-gray-600">History
+                    Bookings</a>
+                <a href="/promo-preview" class="block px-4 py-2 border-b border-gray-600">Promo</a>
+                <a href="/membership-preview" class="block px-4 py-2 border-b border-gray-600">Membership</a>
+            @else
+                <a href="/riwayatbooking" class="block px-4 py-2 border-b border-gray-600">History Bookings</a>
+                <a href="/promo" class="block px-4 py-2 border-b border-gray-600">Promo</a>
+                <a href="/membership" class="block px-4 py-2 border-b border-gray-600">Membership</a>
+            @endif
+
 
             <!-- Mobile Search -->
             {{-- <div class="px-4 py-2">

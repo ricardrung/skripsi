@@ -75,7 +75,8 @@
                     <!-- Form Booking Modal -->
                     <div id="bookingModal"
                         class="fixed inset-0 flex items-center justify-center bg-opacity-50 hidden z-50 overflow-y-auto">
-                        <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-lg relative max-h-screen overflow-auto">
+                        <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-lg relative"
+                            style="max-height: calc(var(--vh, 1vh) * 100); overflow-y: auto;">
                             <!-- Tombol Close -->
                             <button onclick="closeModal()"
                                 class="absolute top-2 right-2 text-gray-600 hover:text-gray-800 text-2xl">&times;</button>
@@ -160,7 +161,8 @@
                                             @if ($t->category_id != 7)
                                                 <option value="{{ $t->id }}" data-harga="{{ $t->price }}"
                                                     data-happyhour-price="{{ $t->happy_hour_price ?? $t->price }}"
-                                                    data-room-type="{{ $t->room_type }}">
+                                                    data-room-type="{{ $t->room_type }}"
+                                                    data-category="{{ $t->category->name ?? '' }}">
                                                     {{ $t->name }} ({{ $t->category->name ?? '-' }})
                                                 </option>
                                             @endif
@@ -308,10 +310,10 @@
 
                         // Simpan harga dan durasi dalam elemen modal
                         document.getElementById("bookingModal").setAttribute("data-harga", harga);
-                        document.getElementById("bookingModal").setAttribute("data-durasi", durasi); // Menyimpan durasi
+                        document.getElementById("bookingModal").setAttribute("data-durasi", durasi);
 
                         setMinDate();
-                        updateJam(durasi); // Pastikan durasi sudah terisi
+                        updateJam(durasi);
                         updateHarga();
                     }
 
@@ -386,11 +388,60 @@
                         });
                     }
 
+                    // function updateHarga() {
+                    //     const hargaText = document.getElementById("harga");
+
+                    //     const modal = document.getElementById("bookingModal");
+                    //     const hargaUtama = parseInt(modal.getAttribute("data-harga")) || 0;
+
+                    //     // Ambil treatment kedua (jika ada)
+                    //     const secondTreatmentSelect = document.getElementById("second_treatment_id");
+                    //     let hargaKedua = 0;
+
+                    //     if (secondTreatmentSelect && secondTreatmentSelect.value) {
+                    //         const selectedOption = secondTreatmentSelect.options[secondTreatmentSelect.selectedIndex];
+
+                    //         hargaKedua = parseInt(selectedOption.getAttribute('data-harga')) || 0;
+                    //         let hargaHappyHourKedua = parseInt(selectedOption.getAttribute('data-happyhour-price')) || hargaKedua;
+
+                    //         const bookingDate = document.getElementById('booking_date').value;
+                    //         const bookingTime = document.getElementById('booking_time').value;
+                    //         const dateObj = new Date(`${bookingDate}T${bookingTime}`);
+                    //         const day = dateObj.getDay();
+                    //         const hour = dateObj.getHours();
+
+                    //         const isHappyHour = (day >= 1 && day <= 5 && hour >= 10 && hour < 13);
+                    //         if (isHappyHour) hargaKedua = hargaHappyHourKedua;
+
+                    //         // Diskon member treatment kedua
+                    //         const diskonMember = parseInt(modal.getAttribute("data-diskon-member")) || 0;
+                    //         const scope = "{{ auth()->user()?->userMembership?->membership?->applies_to ?? '' }}".toLowerCase();
+                    //         const secondCategory = selectedOption.getAttribute('data-category') || '';
+
+                    //         if (diskonMember > 0 && (scope === 'all' || scope.includes(secondCategory.toLowerCase()))) {
+                    //             hargaKedua = hargaKedua - (hargaKedua * diskonMember / 100);
+                    //         }
+
+                    //         total += hargaKedua;
+                    //     }
+
+
+                    //     // Total harga
+                    //     const totalHarga = hargaUtama + hargaKedua;
+
+                    //     if (totalHarga === 0) {
+                    //         hargaText.textContent = "Gratis";
+                    //     } else {
+                    //         hargaText.textContent = "Rp " + totalHarga.toLocaleString();
+                    //     }
+                    // }
                     function updateHarga() {
                         const hargaText = document.getElementById("harga");
-
                         const modal = document.getElementById("bookingModal");
                         const hargaUtama = parseInt(modal.getAttribute("data-harga")) || 0;
+
+                        // Total awal dari harga utama
+                        let total = hargaUtama;
 
                         // Ambil treatment kedua (jika ada)
                         const secondTreatmentSelect = document.getElementById("second_treatment_id");
@@ -398,17 +449,38 @@
 
                         if (secondTreatmentSelect && secondTreatmentSelect.value) {
                             const selectedOption = secondTreatmentSelect.options[secondTreatmentSelect.selectedIndex];
-                            hargaKedua = parseInt(selectedOption.getAttribute("data-harga")) || 0;
+                            hargaKedua = parseInt(selectedOption.getAttribute('data-harga')) || 0;
+                            let hargaHappyHourKedua = parseInt(selectedOption.getAttribute('data-happyhour-price')) || hargaKedua;
+
+                            const bookingDate = document.getElementById('booking_date').value;
+                            const bookingTime = document.getElementById('booking_time').value;
+
+                            if (bookingDate && bookingTime) {
+                                const dateObj = new Date(`${bookingDate}T${bookingTime}`);
+                                const day = dateObj.getDay();
+                                const hour = dateObj.getHours();
+                                const isHappyHour = (day >= 1 && day <= 5 && hour >= 10 && hour < 13);
+
+                                if (isHappyHour) {
+                                    hargaKedua = hargaHappyHourKedua;
+                                }
+                            }
+
+                            // Tambahkan harga kedua ke total
+                            total += hargaKedua;
                         }
 
-                        // Total harga
-                        const totalHarga = hargaUtama + hargaKedua;
-
-                        if (totalHarga === 0) {
+                        // Tampilkan total harga
+                        if (total === 0) {
                             hargaText.textContent = "Gratis";
                         } else {
-                            hargaText.textContent = "Rp " + totalHarga.toLocaleString();
+                            hargaText.textContent = "Rp " + total.toLocaleString('id-ID');
                         }
+
+                        // Debug log untuk membantu troubleshooting
+                        console.log('Harga Utama:', hargaUtama);
+                        console.log('Harga Kedua:', hargaKedua);
+                        console.log('Total:', total);
                     }
                     document.getElementById('second_treatment_id').addEventListener('change', updateHarga);
 
@@ -501,7 +573,54 @@
                     document.getElementById('therapist_id').addEventListener('change', fetchAvailableTherapistsSecondTreatment);
                     document.getElementById('booking_date').addEventListener('change', fetchAvailableTherapistsSecondTreatment);
                     document.getElementById('booking_time').addEventListener('change', fetchAvailableTherapistsSecondTreatment);
+
+
+                    function updateRoomTypeOptions() {
+                        const date = document.getElementById('booking_date').value;
+                        const time = document.getElementById('booking_time').value;
+                        const treatmentId1 = document.getElementById('treatment_id').value;
+                        const treatmentId2 = document.getElementById('second_treatment_id').value;
+
+                        if (!date || !time || !treatmentId1) return;
+
+                        fetch(
+                                `/api/all-room-capacities?date=${date}&time=${time}&treatment_id1=${treatmentId1}&treatment_id2=${treatmentId2}`
+                            )
+                            .then(response => response.json())
+                            .then(data => {
+                                const select = document.getElementById('room_type');
+                                Array.from(select.options).forEach(option => {
+                                    const roomType = option.value;
+                                    if (roomType && data[roomType]) {
+                                        const available = data[roomType].available;
+                                        const max = data[roomType].max_capacity;
+                                        option.textContent =
+                                            `${roomType.charAt(0).toUpperCase() + roomType.slice(1)} (tersedia ${available} dari ${max})`;
+                                    }
+                                });
+                            })
+                            .catch(err => {
+                                console.error('Gagal memuat kapasitas semua ruangan:', err);
+                            });
+                    }
+
+                    // Panggil saat tanggal, jam, treatment pertama, atau kedua berubah
+                    document.getElementById('booking_date').addEventListener('change', updateRoomTypeOptions);
+                    document.getElementById('booking_time').addEventListener('change', updateRoomTypeOptions);
+                    document.getElementById('treatment_id').addEventListener('change', updateRoomTypeOptions);
+                    document.getElementById('second_treatment_id').addEventListener('change', updateRoomTypeOptions);
                 </script>
+
+                <script>
+                    // Fix 100vh mobile bug
+                    function setVh() {
+                        let vh = window.innerHeight * 0.01;
+                        document.documentElement.style.setProperty('--vh', `${vh}px`);
+                    }
+                    setVh();
+                    window.addEventListener('resize', setVh);
+                </script>
+
             </div>
         </div>
     </section>
