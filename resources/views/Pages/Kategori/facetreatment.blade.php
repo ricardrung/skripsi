@@ -446,8 +446,16 @@
                                 const day = dateObj.getDay();
                                 const hour = dateObj.getHours();
 
-                                const isHappyHour = (day >= 1 && day <= 5 && hour >= 10 && hour < 13);
-                                if (isHappyHour) hargaKedua = hargaHappyHourKedua;
+                                const happyHourTimes = ["10:00:00", "10:30:00", "11:00:00", "11:30:00",
+                                    "12:00:00", "12:30:00", "13:00:00"
+                                ];
+
+                                const isHappyHour = (day >= 1 && day <= 5) && happyHourTimes.includes(bookingTime);
+
+                                if (isHappyHour) {
+                                    hargaKedua = hargaHappyHourKedua;
+                                }
+                                // if (isHappyHour) hargaKedua = hargaHappyHourKedua;
 
                                 const secondCategory = selectedOption.getAttribute('data-category') || '';
                                 if (diskonMember > 0 && (scope === 'all' || scope.includes(secondCategory.toLowerCase()))) {
@@ -463,6 +471,7 @@
 
 
                         document.getElementById("second_treatment_id").addEventListener("change", updateHarga);
+                        document.getElementById("booking_time").addEventListener("change", updateHarga);
 
 
 

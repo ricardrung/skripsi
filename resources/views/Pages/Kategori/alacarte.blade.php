@@ -428,13 +428,25 @@ Diskon: {{ $discount }}%
                         const bookingDate = document.getElementById('booking_date').value;
                         const bookingTime = document.getElementById('booking_time').value;
 
+                        const happyHourTimes = ["10:00", "10:30", "11:00", "11:30",
+                            "12:00", "12:30", "13:00"
+                        ];
+
                         const isHappyHourTime = () => {
+                            const bookingDate = document.getElementById('booking_date').value;
+                            const bookingTime = document.getElementById('booking_time').value;
+
                             if (!bookingDate || !bookingTime) return false;
+
                             const dateObj = new Date(`${bookingDate}T${bookingTime}`);
                             const day = dateObj.getDay();
-                            const hour = dateObj.getHours();
-                            return day >= 1 && day <= 5 && hour >= 10 && hour < 13;
+
+                            // Ambil jam dan menit saja untuk dibandingkan dengan happyHourTimes
+                            const bookingTimeFormatted = bookingTime.slice(0, 5);
+
+                            return (day >= 1 && day <= 5) && happyHourTimes.includes(bookingTimeFormatted);
                         };
+
 
                         if (secondTreatmentId) {
                             let hargaKedua = parseInt(selectedOption.getAttribute('data-harga')) || 0;
@@ -454,7 +466,7 @@ Diskon: {{ $discount }}%
 
                         hargaText.textContent = "Rp " + Math.round(total).toLocaleString('id-ID');
                     }
-
+                    document.getElementById("booking_time").addEventListener("change", updateHarga);
                     document.getElementById("second_treatment_id").addEventListener("change", updateHarga);
 
                     function fetchAvailableTherapists() {

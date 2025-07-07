@@ -218,7 +218,8 @@ public function storeCustomer(Request $request)
     $existingBookingCount = \App\Models\Booking::where('booking_date', $request->booking_date)
         ->where('booking_time', $request->booking_time)
         ->where('room_type', $roomType) 
-        ->where('status', '!=', 'batal')
+        // ->where('status', '!=', 'batal')
+        ->whereIn('status', ['menunggu', 'sedang']) 
         ->whereHas('treatment', function ($query) use ($roomType) {
             $query->where('room_type', $roomType)
                 ->orWhere('room_type', 'both');
@@ -645,9 +646,17 @@ public function storeAdmin(Request $request)
         })->exists();
     if ($isOverlap) return back()->with('error', 'Therapist sudah memiliki booking bentrok di waktu tersebut.');
 
+    // $isHappyHour = $treatment->happy_hour_price &&
+    //     in_array($bookingDateTime->dayOfWeek, [1, 2, 3, 4, 5]) &&
+    //     $bookingDateTime->between(Carbon::createFromTimeString('10:00:00'), Carbon::createFromTimeString('13:00:00'));
+        
     $isHappyHour = $treatment->happy_hour_price &&
         in_array($bookingDateTime->dayOfWeek, [1, 2, 3, 4, 5]) &&
-        $bookingDateTime->between(Carbon::createFromTimeString('10:00:00'), Carbon::createFromTimeString('13:00:00'));
+        Carbon::parse($request->booking_time)->between(
+            Carbon::createFromTimeString('10:00:00'),
+            Carbon::createFromTimeString('13:00:00')
+        );
+
 
     $isPromoReward = $request->input('is_promo_reward') == true;
     $finalPrice = $isPromoReward ? 0 : ($isHappyHour ? $treatment->happy_hour_price : $treatment->price);
@@ -658,7 +667,8 @@ public function storeAdmin(Request $request)
     $existingBookingCount = Booking::where('booking_date', $request->booking_date)
         ->where('booking_time', $request->booking_time)
         ->where('room_type', $roomType)
-        ->where('status', '!=', 'batal')
+        // ->where('status', '!=', 'batal')
+        ->whereIn('status', ['menunggu', 'sedang']) 
         ->count();
 
     if ($existingBookingCount >= $maxCapacity) {
@@ -890,6 +900,32 @@ public function cancelBooking($id)
     return redirect()->back()->with('success', 'Booking berhasil dibatalkan.');
 }
 
+// public function updateStatus($id, $status)
+// {
+//     $booking = Booking::with('therapist')->findOrFail($id);
+
+//     if (!in_array($status, ['sedang', 'selesai'])) {
+//         return back()->with('error', 'Status tidak valid.');
+//     }
+
+//     // Update status booking
+//     $booking->update(['status' => $status]);
+
+//     // Update availability therapist (jika ada therapist-nya)
+//     if ($booking->therapist) {
+//         if ($status === 'sedang') {
+//             $booking->therapist->update(['availability' => 'sedang menangani']);
+//         }
+
+//         if ($status === 'selesai') {
+//             $booking->therapist->update(['availability' => 'tersedia']);
+//         }
+//     }
+
+
+//     return back()->with('success', "Status booking diubah menjadi '$status'.");
+// }
+
 public function updateStatus($id, $status)
 {
     $booking = Booking::with('therapist')->findOrFail($id);
@@ -898,21 +934,28 @@ public function updateStatus($id, $status)
         return back()->with('error', 'Status tidak valid.');
     }
 
-    // Update status booking
-    $booking->update(['status' => $status]);
+    if ($status === 'sedang') {
+        // Update status booking
+        $booking->update(['status' => $status]);
 
-    // Update availability therapist (jika ada therapist-nya)
-    if ($booking->therapist) {
-        if ($status === 'sedang') {
-            $booking->therapist->update(['availability' => 'sedang menangani']);
-        }
-
-        if ($status === 'selesai') {
-            $booking->therapist->update(['availability' => 'tersedia']);
-        }
+        // Update availability therapist menjadi sedang menangani
+        $booking->therapist?->update(['availability' => 'sedang menangani']);
     }
 
-    
+    if ($status === 'selesai') {
+        $now = now();
+        $bookingStart = Carbon::parse($booking->booking_date . ' ' . $booking->booking_time);
+        $actualDuration = max($now->diffInMinutes($bookingStart), 1); // Minimal 1 menit
+
+        // Update status booking dan durasi_minutes menjadi durasi aktual selesai
+        $booking->update([
+            'status' => $status,
+            'duration_minutes' => $actualDuration,
+        ]);
+
+        // Update availability therapist menjadi tersedia
+        $booking->therapist?->update(['availability' => 'tersedia']);
+    }
 
     return back()->with('success', "Status booking diubah menjadi '$status'.");
 }
@@ -1088,7 +1131,8 @@ public function getAllRoomCapacities(Request $request)
 
         $bookedCount = \App\Models\Booking::where('booking_date', $date)
             ->where('room_type', $roomType)
-            ->where('status', '!=', 'batal')
+            // ->where('status', '!=', 'batal')
+            ->whereIn('status', ['menunggu', 'sedang']) 
             ->where(function ($query) use ($startTime, $endTime) {
                 $query->whereBetween('booking_time', [$startTime->format('H:i:s'), $endTime->format('H:i:s')])
                     ->orWhereRaw('? BETWEEN booking_time AND ADDTIME(booking_time, SEC_TO_TIME(duration_minutes * 60))', [$startTime->format('H:i:s')]);

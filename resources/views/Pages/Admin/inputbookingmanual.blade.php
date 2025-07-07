@@ -112,6 +112,7 @@
                     <option value="single">Single</option>
                     <option value="double">Double</option>
                     <option value="hair">Hair</option>
+                    <option value="reflexology">Reflexology</option>
                 </select>
             </div>
 
@@ -214,8 +215,15 @@
                 const isWeekday = day >= 1 && day <= 5;
 
                 if (isWeekday && jamValue) {
-                    const jamMulai = parseInt(jamValue.split(":")[0]);
-                    if (jamMulai >= 10 && jamMulai < 13 && happy) {
+                    const jamParts = jamValue.split(":");
+                    const jamMulai = parseInt(jamParts[0]);
+                    const menitMulai = parseInt(jamParts[1]);
+                    const timeInMinutes = jamMulai * 60 + menitMulai;
+
+                    const start = 10 * 60; // 10:00
+                    const end = 13 * 60; // 13:00
+
+                    if (timeInMinutes >= start && timeInMinutes <= end && happy) {
                         harga = parseInt(happy);
                     }
                 }
