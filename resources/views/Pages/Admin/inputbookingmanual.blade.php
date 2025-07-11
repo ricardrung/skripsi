@@ -14,35 +14,15 @@
         <form action="{{ route('booking.store.admin') }}" method="POST">
             @csrf
 
-            {{-- Pilih User atau Guest --}}
+
+
             <div class="mb-4">
-                <label class="block text-gray-700">Pilih Customer Terdaftar</label>
-                <select name="user_id" id="user_id" class="w-full p-2 border rounded">
-                    <option value="">-- Pilih Customer --</option>
-                    @foreach ($customers as $user)
-                        <option value="{{ $user->id }}">{{ $user->name }} ({{ $user->email }})</option>
-                    @endforeach
-                </select>
+                <label class="block text-gray-700">Nama Tamu (Guest)</label>
+                <input type="text" name="guest_name" class="w-full p-2 border rounded" placeholder="Nama tamu" required>
             </div>
-
-            <div class="mb-4 text-center">
-                <p class="text-gray-500 text-sm">Atau jika tamu belum terdaftar:</p>
-                <button type="button" id="toggleGuest"
-                    class="mt-2 px-4 py-2 bg-yellow-500 rounded hover:bg-yellow-600 text-white">
-                    Isi Manual Data Tamu
-                </button>
-            </div>
-
-            {{-- Input Guest (disembunyikan dulu) --}}
-            <div id="guestSection" class="hidden">
-                <div class="mb-4">
-                    <label class="block text-gray-700">Nama Tamu (Guest)</label>
-                    <input type="text" name="guest_name" class="w-full p-2 border rounded" placeholder="Nama tamu">
-                </div>
-                <div class="mb-4">
-                    <label class="block text-gray-700">Nomor HP</label>
-                    <input type="text" name="guest_phone" class="w-full p-2 border rounded" placeholder="08xxxxxx">
-                </div>
+            <div class="mb-4">
+                <label class="block text-gray-700">Nomor HP</label>
+                <input type="text" name="guest_phone" class="w-full p-2 border rounded" placeholder="08xxxxxx" required>
             </div>
 
             {{-- Treatment --}}

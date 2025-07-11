@@ -564,9 +564,9 @@ public function storeAdmin(Request $request)
         'booking_time' => 'required',
         'therapist_id' => 'nullable|exists:users,id',
         'payment_method' => 'required|in:cash,gateway',
-        'user_id' => 'nullable|exists:users,id',
-        'guest_name' => 'nullable|string',
-        'guest_phone' => 'nullable|string',
+        // 'user_id' => 'nullable|exists:users,id',
+        'guest_name' => 'required|string',
+        'guest_phone' => 'required|string',
         'room_type' => 'required|in:single,double,hair,reflexology',
         'second_treatment_id' => 'nullable|exists:treatments,id',
         'second_therapist_id' => 'nullable|exists:users,id',
@@ -763,14 +763,14 @@ public function storeAdmin(Request $request)
             ]);
         }
 
-        if ($request->user_id && $request->payment_method === 'cash' && $request->input('payment_status') === 'sudah_bayar' ) {
-                $totalSpending = $finalPrice + ($finalPrice2 ?? 0);
+        // if ($request->user_id && $request->payment_method === 'cash' && $request->input('payment_status') === 'sudah_bayar' ) {
+        //         $totalSpending = $finalPrice + ($finalPrice2 ?? 0);
 
-                app(MembershipService::class)->addSpending(
-                    User::find($request->user_id),
-                    $totalSpending
-                );
-            }
+        //         app(MembershipService::class)->addSpending(
+        //             User::find($request->user_id),
+        //             $totalSpending
+        //         );
+        //     }
 
 
 
